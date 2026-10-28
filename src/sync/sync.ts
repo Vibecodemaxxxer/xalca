@@ -3,6 +3,7 @@ import { db, getMeta, onLocalChange, setMeta } from '../db/db';
 import { observe } from '../db/hlc';
 import { SYNC_TABLES, type Base } from '../db/types';
 import { download, isConnected, listFolder, upload } from './dropbox';
+import { uploadPending } from './images';
 import { maxStamp, mergeRecord } from './merge';
 
 // Схема в Dropbox: /data/<deviceId>.json — полный снимок данных каждого устройства.
@@ -88,6 +89,8 @@ async function syncOnce() {
         throw e;
       }
     }
+    // 3. Картинки, добавленные офлайн.
+    await uploadPending();
     setState({ status: 'idle', lastSync: Date.now() });
   } catch (e) {
     setState({ status: 'error', error: e instanceof Error ? e.message : String(e) });

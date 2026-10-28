@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Metric, Recurrence } from '../db/types';
 import { describe } from '../domain/recurrence';
 import { Az } from '../i18n/Az';
@@ -39,24 +40,73 @@ export function ReminderPicker({ value, onChange, hasTime }: { value: number | n
   );
 }
 
-export function MetricPicker({ value, onChange }: { value: Metric; onChange: (m: Metric) => void }) {
+const METRICS: { v: Metric['type']; az: string }[] = [
+  { v: 'check', az: 'İşarə' },
+  { v: 'number', az: 'Say' },
+  { v: 'criteria', az: 'Meyarlar' },
+  { v: 'subtasks', az: 'Alt tapşırıqlar' },
+];
+
+const emptyMetric = (t: Metric['type']): Metric =>
+  t === 'number' ? { type: 'number', target: 10, unit: '', current: 0 } : t === 'criteria' ? { type: 'criteria', items: [] } : { type: t };
+
+/** Метрика успеха. Для привычек доступны только галочка и число. */
+export function MetricPicker({ value, onChange, kinds = ['check', 'number'] }: { value: Metric; onChange: (m: Metric) => void; kinds?: Metric['type'][] }) {
   return (
-    <Field label="Məqsəd">
-      <Seg
-        value={value.type === 'number' ? 'number' : 'check'}
-        options={[
-          { v: 'check', az: 'İşarə' },
-          { v: 'number', az: 'Say' },
-        ]}
-        onChange={(t) => onChange(t === 'number' ? { type: 'number', target: 10, unit: '', current: 0 } : { type: 'check' })}
-      />
+    <div className="field">
+      <span>
+        <Az>Məqsəd</Az>
+      </span>
+      <Seg value={value.type} options={METRICS.filter((m) => kinds.includes(m.v))} onChange={(t) => t !== value.type && onChange(emptyMetric(t))} />
       {value.type === 'number' && (
         <div className="grid2" style={{ marginTop: 8 }}>
           <input type="number" min={1} value={value.target} onChange={(e) => onChange({ ...value, target: Math.max(1, Number(e.target.value) || 1) })} aria-label="Цель" />
           <input type="text" placeholder="стр., км, мин…" value={value.unit} onChange={(e) => onChange({ ...value, unit: e.target.value })} aria-label="Единица" />
         </div>
       )}
-    </Field>
+      {value.type === 'criteria' && <CriteriaEditor items={value.items} onChange={(items) => onChange({ type: 'criteria', items })} />}
+      {value.type === 'subtasks' && <span className="hint">Задача выполнится сама, когда будут выполнены все подзадачи.</span>}
+    </div>
+  );
+}
+
+function CriteriaEditor({ items, onChange }: { items: { text: string; done: boolean }[]; onChange: (i: { text: string; done: boolean }[]) => void }) {
+  const [text, setText] = useState('');
+  const add = () => {
+    if (!text.trim()) return;
+    onChange([...items, { text: text.trim(), done: false }]);
+    setText('');
+  };
+  return (
+    <div className="criteria">
+      {items.map((it, i) => (
+        <div key={i} className="criterion">
+          <input type="checkbox" checked={it.done} onChange={() => onChange(items.map((x, j) => (j === i ? { ...x, done: !x.done } : x)))} />
+          <input type="text" value={it.text} onChange={(e) => onChange(items.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))} />
+          <button type="button" className="btn ghost" aria-label="Удалить критерий" onClick={() => onChange(items.filter((_, j) => j !== i))}>
+            ×
+          </button>
+        </div>
+      ))}
+      <div className="criterion">
+        <span style={{ width: 18 }} />
+        <input
+          type="text"
+          placeholder="Критерий: как понять, что сделано…"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              add();
+            }
+          }}
+        />
+        <button type="button" className="btn ghost" aria-label="Добавить критерий" onClick={add} disabled={!text.trim()}>
+          +
+        </button>
+      </div>
+    </div>
   );
 }
 

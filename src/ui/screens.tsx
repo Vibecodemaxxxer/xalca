@@ -1,22 +1,14 @@
-import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo, useState } from 'react';
-import { alive, db } from '../db/db';
 import type { Routine, RoutineLog, Task } from '../db/types';
 import { newTask } from '../domain/ops';
 import { isDue, streak, upcoming } from '../domain/recurrence';
 import { Az } from '../i18n/Az';
 import { addDays, today, type Day } from '../lib/date';
 import { Empty, Icon, Section } from './common';
+import { useData } from './data';
 import { RoutineSheet, TaskSheet } from './Editors';
 import { dayLabel, longDate } from './fmt';
 import { RoutineRow, TaskRow } from './Rows';
-
-function useData() {
-  const tasks = useLiveQuery(() => db.tasks.filter(alive).toArray(), []) ?? [];
-  const routines = useLiveQuery(() => db.routines.filter(alive).toArray(), []) ?? [];
-  const logs = useLiveQuery(() => db.routineLogs.filter(alive).toArray(), []) ?? [];
-  return { tasks, routines, logs };
-}
 
 /** Индекс отметок рутин: routineId → день → отметка. */
 function useLogIndex(logs: RoutineLog[]) {
@@ -224,7 +216,8 @@ export function TasksScreen() {
     { title: 'Bu gün', items: open.filter((x) => x.date === t), showDate: false },
     { title: 'Sabah', items: open.filter((x) => x.date === tm), showDate: false },
     { title: 'Qarşıdakı', items: open.filter((x) => x.date && x.date > tm) },
-    { title: 'Tarixsiz', items: open.filter((x) => !x.date).sort((a, b) => b.order - a.order) },
+    // без даты — только самостоятельные задачи; подзадачи и задачи проектов живут в своих деревьях
+    { title: 'Tarixsiz', items: open.filter((x) => !x.date && !x.parentId && !x.projectId).sort((a, b) => b.order - a.order) },
   ];
   for (const g of groups.slice(0, 4)) g.items.sort((a, b) => a.date!.localeCompare(b.date!) || byTime(a, b));
   const done = tasks.filter((x) => x.status === 'done').sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0)).slice(0, 50);

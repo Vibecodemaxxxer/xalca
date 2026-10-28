@@ -3,31 +3,53 @@ import { describe } from '../domain/recurrence';
 import { logRoutine, logRoutineValue, setTaskDone, setTaskProgress } from '../domain/ops';
 import { Az } from '../i18n/Az';
 import { today, type Day } from '../lib/date';
+import { taskProgress } from '../domain/tree';
 import { Bar, Check, Icon, Stepper } from './common';
+import { useData } from './data';
 import { dayLabel } from './fmt';
 
-export function TaskRow({ task: t, onOpen, showDate = true }: { task: Task; onOpen: () => void; showDate?: boolean }) {
+export function TaskRow({ task: t, onOpen, showDate = true, showProject = true }: { task: Task; onOpen: () => void; showDate?: boolean; showProject?: boolean }) {
+  const { children, projectById, byId } = useData();
   const done = t.status === 'done';
   const late = !done && !!t.date && t.date < today();
   const num = t.metric.type === 'number' ? t.metric : null;
+  const progress = num ? null : taskProgress(t, children);
   const d = t.date ? dayLabel(t.date) : null;
+  const project = showProject && t.projectId ? projectById.get(t.projectId) : undefined;
+  const parent = showProject && t.parentId ? byId.get(t.parentId) : undefined;
+  const hasNote = !!t.description.trim();
+  const meta = (d && (showDate || late)) || t.time || t.reminder != null || project || parent || hasNote || (progress && progress.total > 0);
   return (
     <div className={`row${done ? ' done' : ''}`}>
       <Check on={done} onToggle={() => setTaskDone(t, !done)} />
       <div className="body" onClick={onOpen}>
         <div className="title">{t.title}</div>
-        {(d && (showDate || late)) || t.time || t.reminder != null ? (
+        {meta ? (
           <div className="meta">
+            {project && (
+              <span className="chip">
+                <i className="pdot" style={{ background: project.color }} />
+                {project.title}
+              </span>
+            )}
+            {parent && <span className="chip">↳ {parent.title}</span>}
             {d && (showDate || late) && (
               <span className={late ? 'late' : ''}>
                 <Az ru={d.ru}>{d.az}</Az>
               </span>
             )}
             {t.time && <span className="chip">{t.time}</span>}
-            {t.reminder != null && <span className="chip" style={{ width: 13 }}>{Icon.bell}</span>}
+            {t.reminder != null && <span className="chip ico">{Icon.bell}</span>}
+            {progress && progress.total > 0 && (
+              <span className="chip">
+                {progress.done}/{progress.total}
+              </span>
+            )}
+            {hasNote && <span className="chip ico">{t.images.length ? Icon.image : Icon.note}</span>}
           </div>
         ) : null}
         {num && <Bar cur={num.current ?? 0} target={num.target} />}
+        {progress && progress.total > 0 && <Bar cur={progress.done} target={progress.total} />}
       </div>
       {num && <Stepper value={num.current ?? 0} target={num.target} unit={num.unit} onChange={(v) => setTaskProgress(t, v)} />}
     </div>

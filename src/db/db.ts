@@ -9,6 +9,8 @@ class XalcaDB extends Dexie {
   routineLogs!: Table<RoutineLog, string>;
   /** Локальные настройки устройства, не синхронизируются. */
   meta!: Table<{ key: string; value: unknown }, string>;
+  /** Картинки по sha-256 содержимого; uploaded: 0/1 — выгружена ли в Dropbox. */
+  blobs!: Table<{ hash: string; mime: string; data: Blob; uploaded: 0 | 1 }, string>;
 
   constructor() {
     super('xalca');
@@ -19,6 +21,7 @@ class XalcaDB extends Dexie {
       routineLogs: 'id, routineId, date, updatedAt',
       meta: 'key',
     });
+    this.version(2).stores({ blobs: 'hash, uploaded' });
   }
 }
 

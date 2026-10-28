@@ -4,27 +4,34 @@ import { Az } from './i18n/Az';
 import { isNative } from './notify/notify';
 import { Buta, Icon } from './ui/common';
 import { RoutinesScreen, TasksScreen, TodayScreen } from './ui/screens';
+import { DataProvider } from './ui/data';
+import { ProjectsScreen } from './ui/Projects';
 import { SettingsScreen } from './ui/Settings';
 import { UpdateBanner } from './ui/UpdateBanner';
 
-type Tab = 'today' | 'routines' | 'tasks' | 'settings';
+type Tab = 'today' | 'routines' | 'tasks' | 'projects' | 'settings';
 const TABS: { id: Tab; az: string; icon: ReactNode }[] = [
   { id: 'today', az: 'Bu gün', icon: Icon.today },
   { id: 'routines', az: 'Vərdişlər', icon: Icon.routine },
   { id: 'tasks', az: 'Tapşırıqlar', icon: Icon.tasks },
+  { id: 'projects', az: 'Layihələr', icon: Icon.projects },
   { id: 'settings', az: 'Ayarlar', icon: Icon.settings },
 ];
 
-const fromHash = (): Tab => {
-  const h = location.hash.slice(1) as Tab;
-  return TABS.some((t) => t.id === h) ? h : 'today';
+/** #tab или #projects/<id> */
+const fromHash = (): { tab: Tab; arg?: string } => {
+  const [h, arg] = location.hash.slice(1).split('/') as [Tab, string?];
+  return TABS.some((t) => t.id === h) ? { tab: h, arg } : { tab: 'today' };
 };
 
 export function App() {
-  const [tab, setTab] = useState<Tab>(fromHash);
+  const [{ tab, arg }, setRoute] = useState(fromHash);
 
   useEffect(() => {
-    const on = () => setTab(fromHash());
+    const on = () => {
+      setRoute(fromHash());
+      window.scrollTo(0, 0);
+    };
     window.addEventListener('hashchange', on);
     return () => window.removeEventListener('hashchange', on);
   }, []);
@@ -34,7 +41,8 @@ export function App() {
     if (!isNative) return;
     const sub = CapApp.addListener('backButton', () => {
       if (document.querySelector('.sheet-bg')) document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-      else if (fromHash() !== 'today') location.hash = 'today';
+      else if (fromHash().arg) history.back();
+      else if (fromHash().tab !== 'today') location.hash = 'today';
       else void CapApp.minimizeApp();
     });
     return () => void sub.then((s) => s.remove());
@@ -42,10 +50,10 @@ export function App() {
 
   const go = (t: Tab) => {
     location.hash = t;
-    window.scrollTo(0, 0);
   };
 
   return (
+    <DataProvider>
     <div className="app">
       <nav className="nav">
         <div className="brand">
@@ -66,9 +74,11 @@ export function App() {
           {tab === 'today' && <TodayScreen />}
           {tab === 'routines' && <RoutinesScreen />}
           {tab === 'tasks' && <TasksScreen />}
+          {tab === 'projects' && <ProjectsScreen openId={arg} />}
           {tab === 'settings' && <SettingsScreen />}
         </main>
       </div>
     </div>
+    </DataProvider>
   );
 }
