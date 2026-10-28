@@ -6,7 +6,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
     "test": "vitest run",
-    "android": "vite build && cap sync android && cd android && gradlew.bat assembleDebug && copy /Y app\buildoutputsapkdebugapp-debug.apk ..Xalca.apk"
+    "android": "node scripts/build.mjs native && cap sync android && cd android && gradlew.bat assembleDebug && copy /Y app\buildoutputsapkdebugapp-debug.apk ..\releaseXalca.apk"
   },
   "type": "module",
   "dependencies": {
@@ -15,6 +15,7 @@
     "@capacitor/browser": "^8.0.5",
     "@capacitor/core": "^8.5.3",
     "@capacitor/local-notifications": "^8.3.1",
+    "@capgo/capacitor-updater": "^8.54.0",
     "dexie": "^4.4.7",
     "dexie-react-hooks": "^4.4.0",
     "react": "^18.3.1",

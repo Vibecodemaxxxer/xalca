@@ -4,6 +4,7 @@ import { App } from './App';
 import { getMeta, initDevice, onLocalChange } from './db/db';
 import { initNotifications, isNative, reschedule } from './notify/notify';
 import { onRemoteChange, startAutoSync } from './sync/sync';
+import { initUpdates } from './update/update';
 import { applyTheme, type Theme } from './ui/Settings';
 import './ui/styles.css';
 
@@ -22,6 +23,7 @@ async function boot() {
     registerSW({ immediate: true });
   }
 
+  void initUpdates();
   startAutoSync();
   await initNotifications();
 

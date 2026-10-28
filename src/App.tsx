@@ -5,6 +5,7 @@ import { isNative } from './notify/notify';
 import { Buta, Icon } from './ui/common';
 import { RoutinesScreen, TasksScreen, TodayScreen } from './ui/screens';
 import { SettingsScreen } from './ui/Settings';
+import { UpdateBanner } from './ui/UpdateBanner';
 
 type Tab = 'today' | 'routines' | 'tasks' | 'settings';
 const TABS: { id: Tab; az: string; icon: ReactNode }[] = [
@@ -61,6 +62,7 @@ export function App() {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="border-strip" />
         <main className="main">
+          <UpdateBanner />
           {tab === 'today' && <TodayScreen />}
           {tab === 'routines' && <RoutinesScreen />}
           {tab === 'tasks' && <TasksScreen />}

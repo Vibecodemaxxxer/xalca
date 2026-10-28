@@ -4,6 +4,7 @@ import { getMeta, setMeta } from '../db/db';
 import { Az } from '../i18n/Az';
 import { isNative, permissionState, requestPermission } from '../notify/notify';
 import { authUrl, disconnect, finishAuth, getAppKey, isConnected, setAppKey } from '../sync/dropbox';
+import { APP_VERSION } from '../update/update';
 import { getSyncState, onSyncState, syncNow, type SyncState } from '../sync/sync';
 
 export function useSyncState() {
@@ -32,6 +33,9 @@ export function SettingsScreen() {
       <DropboxCard />
       <NotifyCard />
       <ThemeCard />
+      <p className="hint" style={{ textAlign: 'center', marginTop: 24 }}>
+        <Az>Versiya</Az> {APP_VERSION}
+      </p>
     </>
   );
 }

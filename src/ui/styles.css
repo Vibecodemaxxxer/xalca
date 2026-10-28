@@ -207,3 +207,11 @@ code { background: var(--surface-2); padding: 1px 5px; border-radius: 5px; font-
 .sync-badge.syncing svg { animation: spin 1s linear infinite; color: var(--oxra); }
 .sync-badge.error { color: var(--danger); }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- обновление ---- */
+.update-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-top: 14px; padding: 10px 12px; border-radius: var(--radius);
+  background: color-mix(in srgb, var(--oxra) 18%, var(--surface)); border: 1px solid color-mix(in srgb, var(--oxra) 45%, transparent);
+}
+.update-banner .btn { padding: 7px 12px; }

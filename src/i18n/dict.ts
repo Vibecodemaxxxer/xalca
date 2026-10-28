@@ -69,4 +69,9 @@ export const dict: Record<string, string> = {
   'Tamamlanmışları göstər': 'Показать выполненные',
   'Yaz və Enter bas': 'Напиши и нажми Enter',
   'Əlavə et': 'Добавить',
+  'Yeniləmə hazırdır': 'Обновление готово',
+  'Yenilə': 'Обновить',
+  'Versiya': 'Версия',
+  'Yeni versiya lazımdır': 'Нужна новая версия приложения',
+  'Yüklə': 'Скачать',
 };

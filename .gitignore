@@ -3,4 +3,5 @@ dist
 android/app/build
 android/.gradle
 .env.local
-*.apk
+/Xalca.apk
+build
