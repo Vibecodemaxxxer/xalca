@@ -592,3 +592,35 @@ html[data-lang='mixed'] :is(button, a, label, select, [role=button]) .ru-t { dis
   animation: bought 3s ease-out forwards;
 }
 @keyframes bought { 0% { opacity: 0; transform: scale(.95); } 10% { opacity: 1; transform: none; } 85% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---------- визуальный редактор (как в Notion) ---------- */
+.re { position: relative; }
+.re-toolbar {
+  position: sticky; top: -8px; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 2px;
+  padding: 4px; margin-bottom: 6px; border-radius: 14px; background: var(--surface); border: 2px solid var(--line);
+}
+.re-toolbar button, .re-bubble button {
+  min-width: 34px; height: 34px; padding: 0 7px; border: 0; border-radius: 9px; background: none; color: var(--muted);
+  font: 900 14px var(--font); display: inline-grid; place-items: center;
+}
+.re-toolbar button:hover, .re-bubble button:hover { background: var(--surface-2); color: var(--text); }
+.re-toolbar button.on, .re-bubble button.on { background: color-mix(in srgb, var(--blue) 15%, transparent); color: var(--blue); }
+.re-sep { width: 2px; height: 20px; background: var(--line); margin: 0 3px; border-radius: 1px; }
+.re-bubble { display: flex; gap: 2px; padding: 4px; border-radius: 12px; background: var(--surface); border: 2px solid var(--line); box-shadow: 0 8px 22px rgba(0, 0, 0, .18); }
+.re-content .ProseMirror { min-height: 60px; padding: 4px 2px; outline: none; line-height: 1.55; }
+.re-content .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--muted); float: left; height: 0; pointer-events: none; font-weight: 600; }
+.re-content .ProseMirror ul[data-type='taskList'] { list-style: none; padding-left: 2px; }
+.re-content .ProseMirror ul[data-type='taskList'] li { display: flex; align-items: flex-start; gap: 8px; }
+.re-content .ProseMirror ul[data-type='taskList'] li > label { flex: none; margin-top: 3px; }
+.re-content .ProseMirror ul[data-type='taskList'] li > div { flex: 1; min-width: 0; }
+.re-content .ProseMirror ul[data-type='taskList'] li[data-checked='true'] > div { color: var(--muted); text-decoration: line-through; }
+.re-content .ProseMirror a { color: var(--blue); font-weight: 700; text-decoration: underline; }
+.re-content .ProseMirror code { background: var(--surface-2); padding: 1px 5px; border-radius: 6px; }
+.re-img img { max-width: 100%; max-height: 360px; border-radius: 12px; display: block; margin: 6px 0; }
+.re-content .ProseMirror-selectednode img { outline: 3px solid var(--blue); }
+@media (max-width: 640px) {
+  .re-toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .re-toolbar::-webkit-scrollbar { display: none; }
+  .re-toolbar button { flex: none; }
+  .re-sep { flex: none; }
+}

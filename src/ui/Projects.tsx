@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Project, Task } from '../db/types';
 import { setTaskDone } from '../domain/ops';
 import { projectProgress, taskProgress } from '../domain/tree';
@@ -9,7 +9,7 @@ import { QuickInput } from './TaskCard';
 import { useData } from './data';
 import { QuoteCard } from './Quote';
 import { ProjectSheet, QuickSub, TaskSheet } from './Editors';
-import { Markdown } from './Markdown';
+import { RichEditor } from './Markdown';
 import { dayLabel } from './fmt';
 import { update } from '../db/db';
 
@@ -153,11 +153,9 @@ function ProjectView({ project: p }: { project: Project }) {
           </div>
         )
       )}
-      {p.description.trim() && (
-        <div className="card project-desc">
-          <Markdown source={p.description} onChange={(md) => void update<Project>('projects', p.id, { description: md })} />
-        </div>
-      )}
+      <div className="project-desc">
+        <ProjectNotes project={p} />
+      </div>
 
       <div style={{ marginTop: 14 }}>
         <QuickInput defaults={{ projectId: p.id }} />
@@ -224,4 +222,23 @@ function TreeNode({ task: t, depth, collapsed, onToggle, onOpen }: { task: Task;
       {!isCollapsed && kids.map((k) => <TreeNode key={k.id} task={k} depth={depth + 1} collapsed={collapsed} onToggle={onToggle} onOpen={onOpen} />)}
     </div>
   );
+}
+
+/** Заметки проекта прямо на странице: редактируются как в Notion, сохраняются сами. */
+function ProjectNotes({ project: p }: { project: Project }) {
+  const [text, setText] = useState(p.description);
+  const pending = useRef<string | null>(null);
+  const flush = () => {
+    if (pending.current != null) void update<Project>('projects', p.id, { description: pending.current });
+    pending.current = null;
+  };
+  useEffect(() => {
+    if (text === p.description) return;
+    pending.current = text;
+    const t = setTimeout(flush, 600);
+    return () => clearTimeout(t);
+  }, [text]);
+  // уходим со страницы — сохраняем недописанное
+  useEffect(() => () => flush(), []);
+  return <RichEditor value={p.description} onChange={setText} placeholder="Заметки, план, ссылки…" />;
 }

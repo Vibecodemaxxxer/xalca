@@ -1,10 +1,21 @@
-import { useEffect, useRef, useState, type ClipboardEvent } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Az } from '../i18n/Az';
 import { toggleCheckbox } from '../lib/md';
-import { addImage, IMG_PREFIX, imageUrl } from '../sync/images';
-import { Icon } from './common';
+import { IMG_PREFIX, imageUrl } from '../sync/images';
+import type { RichEditor as RichEditorType } from './RichEditor';
+
+// Редактор тяжёлый — грузим отдельным файлом, когда он впервые нужен.
+const LazyEditor = lazy(() => import('./RichEditor').then((m) => ({ default: m.RichEditor })));
+
+/** Визуальный редактор с ленивой загрузкой. */
+export function RichEditor(props: Parameters<typeof RichEditorType>[0]) {
+  return (
+    <Suspense fallback={<div className="md-preview hint">…</div>}>
+      <LazyEditor {...props} />
+    </Suspense>
+  );
+}
 
 /** Картинка из локального хранилища / Dropbox по ссылке img:<hash>. */
 function StoredImage({ hash, alt }: { hash: string; alt?: string }) {
@@ -57,81 +68,7 @@ export function Markdown({ source, onChange }: { source: string; onChange?: (md:
   );
 }
 
-/** Поле описания: «Yaz» (писать) / «Bax» (смотреть), вставка картинок из буфера и из файла/камеры. */
-export function MdEditor({ value, onChange, startInPreview }: { value: string; onChange: (v: string) => void; startInPreview?: boolean }) {
-  const [preview, setPreview] = useState(!!startInPreview && !!value.trim());
-  const [busy, setBusy] = useState(false);
-  const ta = useRef<HTMLTextAreaElement>(null);
-  const file = useRef<HTMLInputElement>(null);
-  const valueRef = useRef(value);
-  valueRef.current = value;
-
-  const insertImages = async (files: Blob[]) => {
-    if (!files.length) return;
-    setBusy(true);
-    try {
-      const refs: string[] = [];
-      for (const f of files) refs.push(`![](${IMG_PREFIX}${await addImage(f)})`);
-      const text = refs.join('\n');
-      const cur = valueRef.current;
-      const el = ta.current;
-      // В позицию курсора — только если пользователь реально в поле; иначе в конец.
-      const pos = el && !preview && document.activeElement === el ? el.selectionStart : cur.length;
-      const before = cur.slice(0, pos);
-      const sep = before && !before.endsWith('\n') ? '\n' : '';
-      onChange(`${before}${sep}${text}\n${cur.slice(pos)}`);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const onPaste = (e: ClipboardEvent) => {
-    const imgs = [...e.clipboardData.items].filter((i) => i.type.startsWith('image/')).map((i) => i.getAsFile()!).filter(Boolean);
-    if (imgs.length) {
-      e.preventDefault();
-      void insertImages(imgs);
-    }
-  };
-
-  return (
-    <div className="md-editor">
-      <div className="md-tools">
-        <div className="seg">
-          <button type="button" className={!preview ? 'on' : ''} onClick={() => setPreview(false)}>
-            <Az>Yaz</Az>
-          </button>
-          <button type="button" className={preview ? 'on' : ''} onClick={() => setPreview(true)}>
-            <Az>Bax</Az>
-          </button>
-        </div>
-        <button type="button" className="btn ghost" disabled={busy} onClick={() => file.current?.click()}>
-          <span className="ico">{busy ? Icon.sync : Icon.image}</span> <Az>Şəkil</Az>
-        </button>
-        <input
-          ref={file}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          onChange={(e) => {
-            void insertImages([...(e.target.files ?? [])]);
-            e.target.value = '';
-          }}
-        />
-      </div>
-      {preview ? (
-        <div className="md-preview" onDoubleClick={() => setPreview(false)}>
-          {value.trim() ? <Markdown source={value} onChange={onChange} /> : <span className="hint">Пусто</span>}
-        </div>
-      ) : (
-        <textarea
-          ref={ta}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onPaste={onPaste}
-          placeholder={'Markdown: **жирный**, *курсив*, - список, - [ ] галочка, # заголовок'}
-        />
-      )}
-    </div>
-  );
+/** Поле описания — визуальный редактор как в Notion (старое имя оставлено для прежних импортов). */
+export function MdEditor({ value, onChange }: { value: string; onChange: (v: string) => void; startInPreview?: boolean }) {
+  return <RichEditor value={value} onChange={onChange} />;
 }
