@@ -61,7 +61,9 @@ if (mode === 'native') {
   }
   // Плагин требует SHA-256 архива — без неё скачивание отклоняется.
   const checksum = createHash('sha256').update(readFileSync(`build/pages/update/${zip}`)).digest('hex');
-  const manifest = { version: v, bundle: `update/${zip}`, checksum, minNative: nativeCode, apk: 'Xalca.apk', notes };
+  // APK отдаём прямо из репозитория: ссылку на сайт перехватил бы service worker PWA.
+  const apk = repo ? `https://github.com/${repo}/raw/main/release/Xalca.apk` : 'Xalca.apk';
+  const manifest = { version: v, bundle: `update/${zip}`, checksum, minNative: nativeCode, apk, notes };
   writeFileSync('build/pages/update/version.json', JSON.stringify(manifest, null, 2));
   console.log('\nГотово:', manifest);
 } else {

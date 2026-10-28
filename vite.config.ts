@@ -28,7 +28,11 @@ export default defineConfig({
           { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // APK и файлы обновлений должны скачиваться, а не подменяться страницей приложения.
+        navigateFallbackDenylist: [/\.apk$/, /\/update\//],
+      },
     }),
   ],
   test: { environment: 'node' },
