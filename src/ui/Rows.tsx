@@ -1,0 +1,61 @@
+import type { Routine, RoutineLog, Task } from '../db/types';
+import { describe } from '../domain/recurrence';
+import { logRoutine, logRoutineValue, setTaskDone, setTaskProgress } from '../domain/ops';
+import { Az } from '../i18n/Az';
+import { today, type Day } from '../lib/date';
+import { Bar, Check, Icon, Stepper } from './common';
+import { dayLabel } from './fmt';
+
+export function TaskRow({ task: t, onOpen, showDate = true }: { task: Task; onOpen: () => void; showDate?: boolean }) {
+  const done = t.status === 'done';
+  const late = !done && !!t.date && t.date < today();
+  const num = t.metric.type === 'number' ? t.metric : null;
+  const d = t.date ? dayLabel(t.date) : null;
+  return (
+    <div className={`row${done ? ' done' : ''}`}>
+      <Check on={done} onToggle={() => setTaskDone(t, !done)} />
+      <div className="body" onClick={onOpen}>
+        <div className="title">{t.title}</div>
+        {(d && (showDate || late)) || t.time || t.reminder != null ? (
+          <div className="meta">
+            {d && (showDate || late) && (
+              <span className={late ? 'late' : ''}>
+                <Az ru={d.ru}>{d.az}</Az>
+              </span>
+            )}
+            {t.time && <span className="chip">{t.time}</span>}
+            {t.reminder != null && <span className="chip" style={{ width: 13 }}>{Icon.bell}</span>}
+          </div>
+        ) : null}
+        {num && <Bar cur={num.current ?? 0} target={num.target} />}
+      </div>
+      {num && <Stepper value={num.current ?? 0} target={num.target} unit={num.unit} onChange={(v) => setTaskProgress(t, v)} />}
+    </div>
+  );
+}
+
+export function RoutineRow({ routine: r, day, log, streak, onOpen }: { routine: Routine; day: Day; log?: RoutineLog; streak: number; onOpen: () => void }) {
+  const done = !!log?.done;
+  const num = r.metric.type === 'number' ? r.metric : null;
+  const value = log?.value ?? 0;
+  return (
+    <div className={`row routine${done ? ' done' : ''}`}>
+      {!num && <Check on={done} onToggle={() => logRoutine(r, day, !done)} />}
+      {num && <Check on={done} onToggle={() => logRoutineValue(r, day, done ? 0 : num.target)} />}
+      <div className="body" onClick={onOpen}>
+        <div className="title">{r.title}</div>
+        <div className="meta">
+          {r.time && <span>{r.time}</span>}
+          <span>{describe(r.recurrence)}</span>
+          {streak > 1 && (
+            <span className="streak">
+              <Az ru={`Стрик: ${streak} раз подряд`}>{`× ${streak}`}</Az>
+            </span>
+          )}
+        </div>
+        {num && <Bar cur={value} target={num.target} />}
+      </div>
+      {num && <Stepper value={value} target={num.target} unit={num.unit} onChange={(v) => logRoutineValue(r, day, v)} />}
+    </div>
+  );
+}
