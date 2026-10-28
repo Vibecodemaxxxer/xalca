@@ -12,6 +12,8 @@ const UPDATE_URL: string = import.meta.env.VITE_UPDATE_URL || '';
 interface Manifest {
   version: string;
   bundle: string;
+  /** SHA-256 архива — плагин без неё не скачивает. */
+  checksum: string;
   minNative: number;
   apk?: string;
   notes?: string;
@@ -36,26 +38,39 @@ const set = (s: UpdateState) => {
 
 let checking = false;
 
+/** Итог последней проверки — показывается в настройках, чтобы было видно, что пошло не так. */
+export let lastCheck: { at: number; result: string } | null = null;
+const note = (result: string) => {
+  lastCheck = { at: Date.now(), result };
+  subs.forEach((fn) => fn(state));
+};
+
 export async function checkForUpdate() {
-  if (!isNative || !UPDATE_URL || checking || !navigator.onLine) return;
+  if (!isNative || !UPDATE_URL || checking) return;
+  if (!navigator.onLine) return note('нет сети');
   checking = true;
   try {
     const res = await fetch(`${UPDATE_URL}update/version.json?t=${Date.now()}`, { cache: 'no-store' });
-    if (!res.ok) return;
+    if (!res.ok) return note(`сервер ответил ${res.status}`);
     const m: Manifest = await res.json();
-    if (m.version === APP_VERSION) return;
+    if (m.version === APP_VERSION) return note('актуальная версия');
 
     const native = Number((await App.getInfo()).build);
-    if (native < m.minNative) return set({ status: 'native', version: m.version, apk: m.apk && new URL(m.apk, UPDATE_URL).href });
+    if (native < m.minNative) {
+      note(`нужен новый APK (${m.version})`);
+      return set({ status: 'native', version: m.version, apk: m.apk && new URL(m.apk, UPDATE_URL).href });
+    }
 
     // Уже скачан и ждёт применения?
     const { bundles } = await CapacitorUpdater.list();
     let bundle = bundles.find((b) => b.version === m.version && b.status !== 'error');
-    if (!bundle) bundle = await CapacitorUpdater.download({ url: new URL(m.bundle, UPDATE_URL).href, version: m.version });
+    if (!bundle) bundle = await CapacitorUpdater.download({ url: new URL(m.bundle, UPDATE_URL).href, version: m.version, checksum: m.checksum });
     await CapacitorUpdater.next({ id: bundle.id });
+    note(`скачана ${m.version}`);
     set({ status: 'ready', version: m.version, notes: m.notes });
   } catch (e) {
     console.warn('update check failed', e);
+    note(`ошибка: ${e instanceof Error ? e.message : String(e)}`);
   } finally {
     checking = false;
   }

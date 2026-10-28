@@ -93,4 +93,6 @@ export const dict: Record<string, string> = {
   'Hələ layihə yoxdur': 'Проектов пока нет',
   'Tapşırıq yoxdur': 'Задач нет',
   'Alt tapşırıq əlavə et': 'Добавить подзадачу',
+  'Yeniləmələr': 'Обновления',
+  'Yoxla': 'Проверить',
 };

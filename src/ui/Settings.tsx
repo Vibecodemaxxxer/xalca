@@ -4,7 +4,7 @@ import { getMeta, setMeta } from '../db/db';
 import { Az } from '../i18n/Az';
 import { isNative, permissionState, requestPermission } from '../notify/notify';
 import { authUrl, disconnect, finishAuth, getAppKey, isConnected, setAppKey } from '../sync/dropbox';
-import { APP_VERSION } from '../update/update';
+import { APP_VERSION, checkForUpdate, lastCheck, onUpdateState } from '../update/update';
 import { getSyncState, onSyncState, syncNow, type SyncState } from '../sync/sync';
 
 export function useSyncState() {
@@ -33,10 +33,52 @@ export function SettingsScreen() {
       <DropboxCard />
       <NotifyCard />
       <ThemeCard />
-      <p className="hint" style={{ textAlign: 'center', marginTop: 24 }}>
-        <Az>Versiya</Az> {APP_VERSION}
-      </p>
+      {isNative ? (
+        <UpdatesCard />
+      ) : (
+        <p className="hint" style={{ textAlign: 'center', marginTop: 24 }}>
+          <Az>Versiya</Az> {APP_VERSION}
+        </p>
+      )}
     </>
+  );
+}
+
+function UpdatesCard() {
+  const [, rerender] = useState(0);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const off = onUpdateState(() => rerender((n) => n + 1));
+    return () => void off();
+  }, []);
+  const at = lastCheck && new Date(lastCheck.at).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
+  return (
+    <div className="card">
+      <h3>
+        <Az>Yeniləmələr</Az>
+      </h3>
+      <p className="hint" style={{ margin: 0 }}>
+        <Az>Versiya</Az> {APP_VERSION}
+        {lastCheck && (
+          <>
+            <br />
+            {at}: {lastCheck.result}
+          </>
+        )}
+      </p>
+      <button
+        className="btn"
+        style={{ marginTop: 10 }}
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          await checkForUpdate();
+          setBusy(false);
+        }}
+      >
+        <Az>Yoxla</Az>
+      </button>
+    </div>
   );
 }
 

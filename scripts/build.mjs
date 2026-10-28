@@ -4,6 +4,7 @@
 //
 // Адрес сайта берётся из UPDATE_URL или из GITHUB_REPOSITORY (в GitHub Actions).
 import { execSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
 const mode = process.argv[2];
@@ -23,17 +24,18 @@ function readSiteUrl() {
   }
 }
 
-/** versionCode Android-приложения: обновление ставится только на APK не старше этого. */
-function nativeVersion() {
-  const m = readFileSync('android/app/build.gradle', 'utf8').match(/versionCode\s+(\d+)/);
-  return Number(m[1]);
-}
+const gradle = readFileSync('android/app/build.gradle', 'utf8');
+/** versionCode APK: обновление ставится только на APK не старше этого. */
+const nativeCode = Number(gradle.match(/versionCode\s+(\d+)/)[1]);
+/** versionName APK, например «1.2». */
+const nativeName = gradle.match(/versionName\s+"([^"]+)"/)[1];
 
+/**
+ * Версия веб-бандла: <versionName>.<номер сборки>, например 1.2.7.
+ * Плагин обновлений не ставит бандл с версией ниже versionName APK, поэтому они связаны.
+ */
 function version() {
-  if (process.env.APP_VERSION) return process.env.APP_VERSION;
-  const d = new Date();
-  const p = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+  return `${nativeName}.${process.env.BUILD_NUMBER ?? 0}`;
 }
 
 const v = version();
@@ -57,7 +59,9 @@ if (mode === 'native') {
       notes = execSync('git log -1 --format=%s').toString().trim();
     } catch {}
   }
-  const manifest = { version: v, bundle: `update/${zip}`, minNative: nativeVersion(), apk: 'Xalca.apk', notes };
+  // Плагин требует SHA-256 архива — без неё скачивание отклоняется.
+  const checksum = createHash('sha256').update(readFileSync(`build/pages/update/${zip}`)).digest('hex');
+  const manifest = { version: v, bundle: `update/${zip}`, checksum, minNative: nativeCode, apk: 'Xalca.apk', notes };
   writeFileSync('build/pages/update/version.json', JSON.stringify(manifest, null, 2));
   console.log('\nГотово:', manifest);
 } else {
