@@ -706,3 +706,27 @@ html[data-lang='mixed'] :is(button, a, label, select, [role=button]) .ru-t { dis
 .done-screen h1 { font: 900 28px var(--font); margin: 8px 0; }
 .xp-big { font: 900 34px var(--font); color: var(--gold-dk); margin: 0 0 12px; }
 .today-tools .ico svg { width: 20px; height: 20px; }
+
+/* ---------- обучение ---------- */
+.tour {
+  position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; flex-direction: column;
+  padding: calc(14px + env(safe-area-inset-top)) 20px calc(18px + env(safe-area-inset-bottom)); animation: fadein .2s;
+}
+.tour-top { display: flex; align-items: center; gap: 12px; min-height: 40px; max-width: 560px; width: 100%; margin: 0 auto; }
+.tour-progress { flex: 1; height: 14px; border-radius: 7px; background: var(--surface-2); overflow: hidden; }
+.tour-progress i { display: block; height: 100%; border-radius: 7px; background: var(--green); transition: width .3s; }
+.tour-card { flex: 1; overflow: auto; display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 560px; width: 100%; margin: 0 auto; padding: 24px 4px; animation: up .3s ease-out; }
+.tour-art { margin: 10px 0 18px; }
+.tour-icon { width: 120px; height: 120px; border-radius: 36px; display: grid; place-items: center; }
+.tour-icon svg { width: 60px; height: 60px; }
+.tour-buta { width: 120px; height: 120px; color: var(--gold); }
+.tour-card h2 { margin: 0 0 12px; font: 900 30px/1.15 var(--font); }
+.tour-body { font-size: 17px; font-weight: 600; line-height: 1.55; color: var(--text); max-width: 460px; }
+.tour-body b { font-weight: 900; }
+.tour-demo { margin: 14px auto; text-align: left; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.tour-demo.props { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+.tour-demo .prop { pointer-events: none; }
+.tour-input { padding: 10px 14px; border-radius: 14px; border: 2px solid var(--blue); background: var(--surface); font-weight: 700; font-size: 15px; }
+.tour-nav { display: flex; gap: 10px; max-width: 560px; width: 100%; margin: 0 auto; }
+.tour-next { flex: 1; min-height: 54px; font-size: 17px; }
+.tour-nav .btn:not(.tour-next) { min-height: 54px; width: 60px; }

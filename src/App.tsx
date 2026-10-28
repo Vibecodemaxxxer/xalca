@@ -10,6 +10,7 @@ import { BazarScreen } from './ui/Bazar';
 import { EventScreen, EventsWatcher } from './ui/Events';
 import { GameWatcher, ProfileScreen, RankBadge } from './ui/Game';
 import { InboxScreen } from './ui/Inbox';
+import { Tour } from './ui/Tour';
 import { DataProvider, useData } from './ui/data';
 import { isOpen } from './domain/notes';
 import { ProjectsScreen } from './ui/Projects';
@@ -89,6 +90,7 @@ export function App() {
           <UpdateBanner />
           <GameWatcher />
           <EventsWatcher />
+          <Tour />
           {tab === 'today' && <TodayScreen />}
           {tab === 'inbox' && <InboxScreen mode={arg} />}
           {tab === 'routines' && <RoutinesScreen />}

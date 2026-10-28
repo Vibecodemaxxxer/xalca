@@ -2,6 +2,7 @@ import { Browser } from '@capacitor/browser';
 import { useEffect, useState } from 'react';
 import { getMeta, setMeta } from '../db/db';
 import { Az } from '../i18n/Az';
+import { openTour } from './Tour';
 import { setLang, useLang, type Lang } from '../i18n/lang';
 import { isNative, permissionState, requestPermission, reschedule } from '../notify/notify';
 import { authUrl, disconnect, finishAuth, getAppKey, isConnected, setAppKey } from '../sync/dropbox';
@@ -30,6 +31,14 @@ export function SettingsScreen() {
         <h1>
           <Az>Ayarlar</Az>
         </h1>
+      </div>
+      <div className="card">
+        <h3>
+          <Az ru="Обучение">Tanışlıq</Az>
+        </h3>
+        <button className="btn" onClick={openTour}>
+          <Az ru="Пройти тур по приложению">Turu başla</Az>
+        </button>
       </div>
       <LangCard />
       <DropboxCard />
