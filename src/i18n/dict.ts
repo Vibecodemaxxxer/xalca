@@ -104,4 +104,5 @@ export const dict: Record<string, string> = {
   'İcrada': 'В работе',
   'Hazır': 'Готово',
   'Dil': 'Язык',
+  'Rütbə': 'Сословие',
 };

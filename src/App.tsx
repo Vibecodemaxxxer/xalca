@@ -6,11 +6,12 @@ import { isNative } from './notify/notify';
 import { Buta, Icon } from './ui/common';
 import { RoutinesScreen, TasksScreen, TodayScreen } from './ui/screens';
 import { DataProvider } from './ui/data';
+import { GameWatcher, ProfileScreen, RankBadge } from './ui/Game';
 import { ProjectsScreen } from './ui/Projects';
 import { SettingsScreen } from './ui/Settings';
 import { UpdateBanner } from './ui/UpdateBanner';
 
-type Tab = 'today' | 'routines' | 'tasks' | 'projects' | 'settings';
+type Tab = 'today' | 'routines' | 'tasks' | 'projects' | 'settings' | 'profile';
 const TABS: { id: Tab; az: string; icon: ReactNode }[] = [
   { id: 'today', az: 'Bu gün', icon: Icon.today },
   { id: 'routines', az: 'Vərdişlər', icon: Icon.routine },
@@ -22,7 +23,8 @@ const TABS: { id: Tab; az: string; icon: ReactNode }[] = [
 /** #tab или #projects/<id> */
 const fromHash = (): { tab: Tab; arg?: string } => {
   const [h, arg] = location.hash.slice(1).split('/') as [Tab, string?];
-  return TABS.some((t) => t.id === h) ? { tab: h, arg } : { tab: 'today' };
+  // профиль не в меню — открывается по значку сословия
+  return TABS.some((t) => t.id === h) || h === 'profile' ? { tab: h, arg } : { tab: 'today' };
 };
 
 export function App() {
@@ -63,6 +65,9 @@ export function App() {
           <Buta className="" />
           Xalça
         </div>
+        <div className="nav-rank">
+          <RankBadge />
+        </div>
         {TABS.map((t) => (
           <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => go(t.id)}>
             {t.icon}
@@ -74,11 +79,13 @@ export function App() {
         <div className="border-strip" />
         <main className="main" key={lang}>
           <UpdateBanner />
+          <GameWatcher />
           {tab === 'today' && <TodayScreen />}
           {tab === 'routines' && <RoutinesScreen />}
           {tab === 'tasks' && <TasksScreen />}
           {tab === 'projects' && <ProjectsScreen openId={arg} />}
           {tab === 'settings' && <SettingsScreen />}
+          {tab === 'profile' && <ProfileScreen />}
         </main>
       </div>
     </div>

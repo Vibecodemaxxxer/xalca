@@ -383,3 +383,55 @@ html[data-lang='ru'] .ru-t { display: inline; }
 html[data-lang='ru'] .az { cursor: inherit; }
 html[data-lang='mixed'] :is(button, a, label, select, [role=button]) .az-t { display: none; }
 html[data-lang='mixed'] :is(button, a, label, select, [role=button]) .ru-t { display: inline; }
+
+/* ---- геймификация ---- */
+.rank-badge {
+  position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px 8px 8px;
+  border-radius: 12px; border: 1px solid color-mix(in srgb, var(--oxra) 50%, var(--line)); background: var(--surface); text-align: left;
+}
+.rb-buta { width: 24px; height: 24px; color: var(--oxra); flex: none; }
+.rb-text { display: flex; flex-direction: column; line-height: 1.15; }
+.rb-name { font: 600 14px var(--serif); color: var(--nar); }
+.rb-xp { font-size: 11.5px; color: var(--muted); }
+.rb-bar { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--oxra); border-radius: 0 2px 2px 0; }
+.nav-rank { display: none; }
+@media (min-width: 900px) {
+  .nav-rank { display: block; padding: 0 4px 14px; }
+  .nav-rank .rank-badge { width: 100%; }
+  .today-rank { display: none; }
+}
+.semeni { flex: none; }
+
+.rank-card { display: flex; gap: 14px; align-items: center; }
+.rank-buta { width: 56px; height: 56px; color: var(--oxra); flex: none; }
+.rank-name { font: 700 26px var(--serif); color: var(--nar); line-height: 1.1; margin: 2px 0; }
+.rank-name.big { font-size: 34px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; text-align: center; }
+.stat b { display: block; font: 700 22px var(--serif); color: var(--mavi); }
+.stat span { font-size: 12px; color: var(--muted); }
+
+.carpet-wrap { display: flex; flex-direction: column; align-items: center; }
+.carpet { width: min(100%, 320px); height: auto; filter: drop-shadow(0 6px 14px rgba(60, 20, 10, .22)); margin: 6px 0; }
+.carpet .crow { cursor: pointer; }
+
+.ranks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.ranks li { display: grid; grid-template-columns: 22px 110px 1fr auto; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 10px; color: var(--muted); }
+.ranks li.past { color: var(--text); }
+.ranks li.cur { background: color-mix(in srgb, var(--oxra) 15%, var(--surface)); color: var(--text); }
+.ranks .rk-dot { color: var(--oxra); }
+.ranks .rk-name { font: 600 15px var(--serif); }
+.ranks li.cur .rk-name { color: var(--nar); }
+.ranks .rk-about { font-size: 13px; }
+.ranks .rk-xp { font-size: 12px; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .ranks li { grid-template-columns: 22px 1fr auto; } .ranks .rk-about { grid-column: 2 / 4; grid-row: 2; } }
+
+.rank-up { text-align: center; padding: 6px 0 4px; }
+.rank-up-buta { width: 84px; height: 84px; color: var(--oxra); animation: rankup 1.2s ease-out; }
+@keyframes rankup { 0% { transform: scale(.3) rotate(-40deg); opacity: 0; } 60% { transform: scale(1.15) rotate(8deg); opacity: 1; } 100% { transform: none; } }
+.xp-toast {
+  position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 30; pointer-events: none;
+  background: var(--oxra); color: #2a1d17; font: 700 15px system-ui; padding: 6px 14px; border-radius: 999px;
+  animation: xpfloat 1.4s ease-out forwards;
+}
+@keyframes xpfloat { 0% { opacity: 0; transform: translate(-50%, 10px); } 15% { opacity: 1; transform: translate(-50%, 0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -24px); } }

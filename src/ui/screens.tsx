@@ -9,6 +9,7 @@ import { Empty, Icon, Section } from './common';
 import { BoardView } from './Board';
 import { CalendarView } from './Calendar';
 import { useData } from './data';
+import { RankBadge } from './Game';
 import { RoutineSheet, TaskSheet } from './Editors';
 import { dayLabel, longDate } from './fmt';
 import { RoutineRow, TaskRow } from './Rows';
@@ -79,7 +80,7 @@ export function TodayScreen() {
     .filter((r) => r.active)
     .map((r) => {
       const days = doneDays(idx.get(r.id));
-      return { r, log: idx.get(r.id)?.get(t), due: isDue(r.recurrence, t, lastDoneBefore(days, t)), streak: streak(r.recurrence, days, t) };
+      return { r, log: idx.get(r.id)?.get(t), due: isDue(r.recurrence, t, lastDoneBefore(days, t)), streak: streak(r.recurrence, days, t), everDone: days.size > 0 };
     })
     .filter((x) => x.due || x.log?.done)
     .sort((a, b) => Number(!!a.log?.done) - Number(!!b.log?.done) || byTime(a.r, b.r));
@@ -97,6 +98,9 @@ export function TodayScreen() {
             <Az ru={head.ru}>{head.az}</Az>
           </div>
         </div>
+        <div className="today-rank">
+          <RankBadge />
+        </div>
       </div>
       <QuickAdd date={t} />
 
@@ -113,8 +117,8 @@ export function TodayScreen() {
       {dueRoutines.length > 0 && (
         <Section title="Vərdişlər" count={dueRoutines.filter((x) => !x.log?.done).length}>
           <div className="list">
-            {dueRoutines.map(({ r, log, streak }) => (
-              <RoutineRow key={r.id} routine={r} day={t} log={log} streak={streak} onOpen={() => setEditing({ kind: 'routine', routine: r })} />
+            {dueRoutines.map(({ r, log, streak, everDone }) => (
+              <RoutineRow key={r.id} routine={r} day={t} log={log} streak={streak} everDone={everDone} onOpen={() => setEditing({ kind: 'routine', routine: r })} />
             ))}
           </div>
         </Section>
@@ -157,7 +161,7 @@ export function RoutinesScreen() {
       const days = doneDays(idx.get(r.id));
       const doneToday = days.has(t);
       const next = upcoming(r.recurrence, doneToday ? addDays(t, 1) : t, 400, lastDoneBefore(days, doneToday ? addDays(t, 1) : t))[0];
-      return { r, streak: streak(r.recurrence, days, t), next, log: idx.get(r.id)?.get(t) };
+      return { r, streak: streak(r.recurrence, days, t), next, log: idx.get(r.id)?.get(t), everDone: days.size > 0 };
     })
     .sort((a, b) => Number(b.r.active) - Number(a.r.active) || byTime(a.r, b.r));
 
@@ -166,9 +170,9 @@ export function RoutinesScreen() {
 
   const list = (xs: typeof rows) => (
     <div className="list">
-      {xs.map(({ r, streak, next, log }) => (
+      {xs.map(({ r, streak, next, log, everDone }) => (
         <div key={r.id}>
-          <RoutineRow routine={r} day={t} log={log} streak={streak} onOpen={() => setEditing({ kind: 'routine', routine: r })} />
+          <RoutineRow routine={r} day={t} log={log} streak={streak} everDone={everDone} onOpen={() => setEditing({ kind: 'routine', routine: r })} />
           {next && next !== t && (
             <div className="hint" style={{ padding: '2px 14px 0' }}>
               <Az>Növbəti</Az>: <Az ru={dayLabel(next).ru}>{dayLabel(next).az}</Az>

@@ -1,8 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import { alive, db } from '../db/db';
+import { db } from '../db/db';
 import type { Project, Routine, RoutineLog, Task } from '../db/types';
 import { childIndex, type ChildIndex } from '../domain/tree';
+import { totalXp, xpByDay } from '../domain/xp';
+import type { Day } from '../lib/date';
 
 interface Data {
   tasks: Task[];
@@ -12,29 +14,41 @@ interface Data {
   byId: Map<string, Task>;
   children: ChildIndex;
   projectById: Map<string, Project>;
+  /** Опыт по дням и всего — по всей истории, включая удалённое. */
+  xp: { byDay: Map<Day, number>; total: number };
 }
 
 const Ctx = createContext<Data | null>(null);
+const alive = <T extends { deletedAt?: number | null }>(xs: T[]) => xs.filter((x) => !x.deletedAt);
 
-/** Все живые данные из локальной базы; обновляются сами при любых изменениях (в т.ч. после синка). */
+/** Все данные из локальной базы; обновляются сами при любых изменениях (в т.ч. после синка). */
 export function DataProvider({ children }: { children: ReactNode }) {
-  const tasks = useLiveQuery(() => db.tasks.filter(alive).toArray(), []);
-  const routines = useLiveQuery(() => db.routines.filter(alive).toArray(), []);
-  const logs = useLiveQuery(() => db.routineLogs.filter(alive).toArray(), []);
-  const projects = useLiveQuery(() => db.projects.filter(alive).toArray(), []);
+  const allTasks = useLiveQuery(() => db.tasks.toArray(), []);
+  const allRoutines = useLiveQuery(() => db.routines.toArray(), []);
+  const allLogs = useLiveQuery(() => db.routineLogs.toArray(), []);
+  const allProjects = useLiveQuery(() => db.projects.toArray(), []);
+
+  const xp = useMemo(() => {
+    if (!allTasks || !allRoutines || !allLogs) return null;
+    const byDay = xpByDay(allTasks, allRoutines, allLogs);
+    return { byDay, total: totalXp(byDay) };
+  }, [allTasks, allRoutines, allLogs]);
 
   const value = useMemo<Data | null>(() => {
-    if (!tasks || !routines || !logs || !projects) return null;
+    if (!allTasks || !allRoutines || !allLogs || !allProjects || !xp) return null;
+    const tasks = alive(allTasks);
+    const projects = alive(allProjects);
     return {
       tasks,
-      routines,
-      logs,
+      routines: alive(allRoutines),
+      logs: alive(allLogs),
       projects,
       byId: new Map(tasks.map((t) => [t.id, t])),
       children: childIndex(tasks),
       projectById: new Map(projects.map((p) => [p.id, p])),
+      xp,
     };
-  }, [tasks, routines, logs, projects]);
+  }, [allTasks, allRoutines, allLogs, allProjects, xp]);
 
   if (!value) return null;
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

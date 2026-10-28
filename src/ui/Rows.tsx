@@ -6,6 +6,7 @@ import { today, type Day } from '../lib/date';
 import { taskProgress } from '../domain/tree';
 import { Bar, Check, Icon, Stepper } from './common';
 import { useData } from './data';
+import { Semeni } from './Game';
 import { dayLabel } from './fmt';
 
 export function TaskRow({ task: t, onOpen, showDate = true, showProject = true }: { task: Task; onOpen: () => void; showDate?: boolean; showProject?: boolean }) {
@@ -56,7 +57,7 @@ export function TaskRow({ task: t, onOpen, showDate = true, showProject = true }
   );
 }
 
-export function RoutineRow({ routine: r, day, log, streak, onOpen }: { routine: Routine; day: Day; log?: RoutineLog; streak: number; onOpen: () => void }) {
+export function RoutineRow({ routine: r, day, log, streak, everDone, onOpen }: { routine: Routine; day: Day; log?: RoutineLog; streak: number; everDone?: boolean; onOpen: () => void }) {
   const done = !!log?.done;
   const num = r.metric.type === 'number' ? r.metric : null;
   const value = log?.value ?? 0;
@@ -78,6 +79,7 @@ export function RoutineRow({ routine: r, day, log, streak, onOpen }: { routine: 
         {num && <Bar cur={value} target={num.target} />}
       </div>
       {num && <Stepper value={value} target={num.target} unit={num.unit} onChange={(v) => logRoutineValue(r, day, v)} />}
+      {everDone != null && <Semeni streak={streak} everDone={everDone} />}
     </div>
   );
 }
