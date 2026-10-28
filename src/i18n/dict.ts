@@ -120,4 +120,5 @@ export const dict: Record<string, string> = {
   'Həftə sonu': 'На выходных',
   'Layihəni tamamla': 'Завершить проект',
   'Tamamlanmış layihələr': 'Завершённые проекты',
+  'Saxlanılanlar': 'Избранное',
 };

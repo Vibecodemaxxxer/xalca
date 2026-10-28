@@ -68,9 +68,9 @@ export function ProjectSheet({ project, onClose, onCreated }: { project?: Projec
   );
 }
 
-export function RoutineSheet({ routine, onClose }: { routine?: Routine; onClose: () => void }) {
-  const [title, setTitle] = useState(routine?.title ?? '');
-  const [description, setDescription] = useState(routine?.description ?? '');
+export function RoutineSheet({ routine, defaults, onCreated, onClose }: { routine?: Routine; defaults?: { title?: string; description?: string }; onCreated?: (r: Routine) => void; onClose: () => void }) {
+  const [title, setTitle] = useState(routine?.title ?? defaults?.title ?? '');
+  const [description, setDescription] = useState(routine?.description ?? defaults?.description ?? '');
   const [recurrence, setRecurrence] = useState<Recurrence>(routine?.recurrence ?? { kind: 'daily', interval: 1, start: today() });
   const [time, setTime] = useState(routine?.time ?? '');
   const [reminder, setReminder] = useState<number | null>(routine?.reminder ?? null);
@@ -81,7 +81,7 @@ export function RoutineSheet({ routine, onClose }: { routine?: Routine; onClose:
     if (!title.trim()) return;
     const fields = { title: title.trim(), description, recurrence, time: time || null, reminder: time ? reminder : null, metric, active };
     if (routine) await update<Routine>('routines', routine.id, fields);
-    else await newRoutine(fields);
+    else onCreated?.(await newRoutine(fields));
     onClose();
   };
 

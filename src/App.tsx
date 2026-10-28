@@ -6,20 +6,25 @@ import { isNative } from './notify/notify';
 import { Buta, Icon } from './ui/common';
 import { RoutinesScreen, TasksScreen, TodayScreen } from './ui/screens';
 import { BazarScreen } from './ui/Bazar';
-import { DataProvider } from './ui/data';
+
 import { EventScreen, EventsWatcher } from './ui/Events';
 import { GameWatcher, ProfileScreen, RankBadge } from './ui/Game';
+import { InboxScreen } from './ui/Inbox';
+import { DataProvider, useData } from './ui/data';
+import { isOpen } from './domain/notes';
 import { ProjectsScreen } from './ui/Projects';
 import { SettingsScreen } from './ui/Settings';
 import { UpdateBanner } from './ui/UpdateBanner';
 
-type Tab = 'today' | 'routines' | 'tasks' | 'projects' | 'settings' | 'profile' | 'event' | 'bazar';
-const TABS: { id: Tab; az: string; icon: ReactNode }[] = [
+type Tab = 'today' | 'inbox' | 'routines' | 'tasks' | 'projects' | 'settings' | 'profile' | 'event' | 'bazar';
+/** desk — только в боковом меню ПК; на телефоне настройки — шестерёнкой в профиле. */
+const TABS: { id: Tab; az: string; icon: ReactNode; desk?: boolean }[] = [
   { id: 'today', az: 'Bu gün', icon: Icon.today },
-  { id: 'routines', az: 'Vərdişlər', icon: Icon.routine },
+  { id: 'inbox', az: 'Saxlanılanlar', icon: Icon.inbox },
   { id: 'tasks', az: 'Tapşırıqlar', icon: Icon.tasks },
   { id: 'projects', az: 'Layihələr', icon: Icon.projects },
-  { id: 'settings', az: 'Ayarlar', icon: Icon.settings },
+  { id: 'routines', az: 'Vərdişlər', icon: Icon.routine },
+  { id: 'settings', az: 'Ayarlar', icon: Icon.settings, desk: true },
 ];
 
 /** #tab или #projects/<id> */
@@ -71,9 +76,10 @@ export function App() {
           <RankBadge />
         </div>
         {TABS.map((t) => (
-          <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => go(t.id)}>
+          <button key={t.id} className={`${tab === t.id ? 'on' : ''}${t.desk ? ' desk-only' : ''}`} onClick={() => go(t.id)}>
             {t.icon}
             <Az>{t.az}</Az>
+            {t.id === 'inbox' && <InboxCount />}
           </button>
         ))}
       </nav>
@@ -84,6 +90,7 @@ export function App() {
           <GameWatcher />
           <EventsWatcher />
           {tab === 'today' && <TodayScreen />}
+          {tab === 'inbox' && <InboxScreen mode={arg} />}
           {tab === 'routines' && <RoutinesScreen />}
           {tab === 'tasks' && <TasksScreen />}
           {tab === 'projects' && <ProjectsScreen openId={arg} />}
@@ -96,4 +103,11 @@ export function App() {
     </div>
     </DataProvider>
   );
+}
+
+/** Сколько сообщений в избранном ждёт разбора — как непрочитанные в Telegram. */
+function InboxCount() {
+  const { notes } = useData();
+  const n = notes.filter(isOpen).length;
+  return n ? <span className="count-dot">{n > 99 ? '99+' : n}</span> : null;
 }

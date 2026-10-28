@@ -1,5 +1,6 @@
 import { create, db, update, upsert } from '../db/db';
-import type { Base, Metric, Project, Purchase, Reward, Routine, RoutineLog, Task, TaskStatus } from '../db/types';
+import type { Base, Metric, Note, Project, Purchase, Reward, Routine, RoutineLog, Task, TaskStatus } from '../db/types';
+import { noteToTask } from './notes';
 import { type Day } from '../lib/date';
 import { imageRefs } from '../sync/images';
 import type { EventRun } from '../events/types';
@@ -180,3 +181,49 @@ export function newReward(fields: { title: string; price: number; repeatable: bo
 export function buyReward(r: Reward) {
   return create<Purchase>('purchases', { rewardId: r.id, title: r.title, price: r.price, at: Date.now() });
 }
+
+// ---------------- избранное ----------------
+
+export function newNote(text: string, images: string[] = []) {
+  return create<Note>('notes', { text, images, pinned: false, movedTo: null, reviewed: false, processedAt: null });
+}
+
+const markMoved = (n: Note, movedTo: NonNullable<Note['movedTo']>) => update<Note>('notes', n.id, { movedTo, processedAt: n.processedAt ?? Date.now() });
+
+/** Сообщение → задача (вернёт задачу, чтобы сразу открыть её карточку). */
+export async function noteToTaskOp(n: Note, projectId: string | null = null) {
+  const t = await newTask({ ...noteToTask(n), projectId, images: n.images });
+  await markMoved(n, { kind: 'task', id: t.id, title: t.title });
+  return t;
+}
+
+/** Несколько сообщений → одна задача, каждое сообщение — подзадача. */
+export async function notesToTask(notes: Note[], title: string, projectId: string | null = null) {
+  const parent = await newTask({ title, projectId, metric: { type: 'subtasks' } });
+  for (const n of notes) {
+    await newTask({ ...noteToTask(n), parentId: parent.id, images: n.images });
+    await markMoved(n, { kind: 'task', id: parent.id, title });
+  }
+  return parent;
+}
+
+/** Сообщение → новый проект. */
+export async function noteToProject(n: Note) {
+  const { title, description } = noteToTask(n);
+  const p = await newProject({ title, description });
+  await markMoved(n, { kind: 'project', id: p.id, title });
+  return p;
+}
+
+/** Дописать сообщение в заметки проекта. */
+export async function noteToProjectNotes(n: Note, p: Project) {
+  const { title, description } = noteToTask(n);
+  const block = [title, description].filter(Boolean).join('\n\n');
+  await update<Project>('projects', p.id, { description: p.description.trim() ? `${p.description.trim()}\n\n${block}` : block });
+  await markMoved(n, { kind: 'projectNote', id: p.id, title: p.title });
+}
+
+export const markNoteMoved = markMoved;
+
+/** «Оставить» при разборе. */
+export const keepNote = (n: Note) => update<Note>('notes', n.id, { reviewed: true, processedAt: n.processedAt ?? Date.now() });

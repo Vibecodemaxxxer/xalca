@@ -166,6 +166,9 @@ export function ProfileScreen() {
         <h1>
           <Az ru="Профиль">Profil</Az>
         </h1>
+        <button className="btn" onClick={() => (location.hash = 'settings')} aria-label="Настройки">
+          <span className="ico">{Icon.settings}</span> <Az>Ayarlar</Az>
+        </button>
       </div>
 
       <div className="card rank-card">

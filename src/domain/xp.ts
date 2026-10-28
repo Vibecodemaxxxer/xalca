@@ -1,4 +1,5 @@
-import type { Project, Routine, RoutineLog, Task, TaskSize } from '../db/types';
+import type { Note, Project, Routine, RoutineLog, Task, TaskSize } from '../db/types';
+import { NOTE_XP } from './notes';
 import { addDays, diffDays, toDay, type Day } from '../lib/date';
 import { isScheduled } from './recurrence';
 
@@ -46,7 +47,7 @@ export function streaksByDay(r: Routine, doneDays: Day[]): Map<Day, number> {
 }
 
 /** XP по дням. */
-export function xpByDay(tasks: Task[], routines: Routine[], logs: RoutineLog[], projects: Project[] = []): Map<Day, number> {
+export function xpByDay(tasks: Task[], routines: Routine[], logs: RoutineLog[], projects: Project[] = [], notes: Note[] = []): Map<Day, number> {
   const out = new Map<Day, number>();
   const add = (d: Day, n: number) => out.set(d, (out.get(d) ?? 0) + n);
 
@@ -59,6 +60,9 @@ export function xpByDay(tasks: Task[], routines: Routine[], logs: RoutineLog[], 
     if (p.deletedAt || !p.completedAt) continue;
     add(toDay(new Date(p.completedAt)), projectBonus(p.id, tasks));
   }
+
+  // разбор избранного
+  for (const n of notes) if (n.processedAt) add(toDay(new Date(n.processedAt)), NOTE_XP);
 
   const byRoutine = new Map<string, Day[]>();
   for (const l of logs) {

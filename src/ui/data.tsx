@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { db } from '../db/db';
-import type { Project, Purchase, Reward, Routine, RoutineLog, Task } from '../db/types';
+import type { Note, Project, Purchase, Reward, Routine, RoutineLog, Task } from '../db/types';
 import { earnedAbbasi, spentAbbasi } from '../domain/abbasi';
 import { EVENTS } from '../events';
 import { pastRuns } from '../events/runtime';
@@ -18,6 +18,8 @@ interface Data {
   children: ChildIndex;
   projectById: Map<string, Project>;
   rewards: Reward[];
+  /** Сообщения избранного (живые), старые сверху. */
+  notes: Note[];
   purchases: Purchase[];
   /** Валюта наград: заработано из истории, потрачено на покупки. */
   abbasi: { earned: number; spent: number; balance: number };
@@ -36,15 +38,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const allProjects = useLiveQuery(() => db.projects.toArray(), []);
   const allRewards = useLiveQuery(() => db.rewards.toArray(), []);
   const allPurchases = useLiveQuery(() => db.purchases.toArray(), []);
+  const allNotes = useLiveQuery(() => db.notes.orderBy('createdAt').toArray(), []);
 
   const xp = useMemo(() => {
-    if (!allTasks || !allRoutines || !allLogs || !allProjects) return null;
-    const byDay = xpByDay(allTasks, allRoutines, allLogs, allProjects);
+    if (!allTasks || !allRoutines || !allLogs || !allProjects || !allNotes) return null;
+    const byDay = xpByDay(allTasks, allRoutines, allLogs, allProjects, allNotes);
     return { byDay, total: totalXp(byDay) };
-  }, [allTasks, allRoutines, allLogs, allProjects]);
+  }, [allTasks, allRoutines, allLogs, allProjects, allNotes]);
 
   const value = useMemo<Data | null>(() => {
-    if (!allTasks || !allRoutines || !allLogs || !allProjects || !allRewards || !allPurchases || !xp) return null;
+    if (!allTasks || !allRoutines || !allLogs || !allProjects || !allRewards || !allPurchases || !allNotes || !xp) return null;
     const tasks = alive(allTasks);
     const projects = alive(allProjects);
     const purchases = alive(allPurchases);
@@ -61,10 +64,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       projectById: new Map(projects.map((p) => [p.id, p])),
       xp,
       rewards: alive(allRewards),
+      notes: alive(allNotes),
       purchases,
       abbasi: { earned, spent, balance: earned - spent },
     };
-  }, [allTasks, allRoutines, allLogs, allProjects, allRewards, allPurchases, xp]);
+  }, [allTasks, allRoutines, allLogs, allProjects, allRewards, allPurchases, allNotes, xp]);
 
   if (!value) return null;
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

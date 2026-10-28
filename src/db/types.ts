@@ -98,5 +98,19 @@ export interface Purchase extends Base {
   at: number;
 }
 
-export type SyncTable = 'tasks' | 'projects' | 'routines' | 'routineLogs' | 'rewards' | 'purchases';
-export const SYNC_TABLES: SyncTable[] = ['tasks', 'projects', 'routines', 'routineLogs', 'rewards', 'purchases'];
+/** Сообщение в «Saxlanılanlar» (избранное, как в Telegram). */
+export interface Note extends Base {
+  text: string;
+  /** Хеши картинок (как в описаниях задач). */
+  images: string[];
+  pinned: boolean;
+  /** Куда перенесено при разборе. */
+  movedTo?: { kind: 'task' | 'project' | 'routine' | 'projectNote'; id: string; title: string } | null;
+  /** Разобрано без переноса («оставить»). */
+  reviewed?: boolean;
+  /** Когда разобрано (перенесено или оставлено) — для опыта за разбор. */
+  processedAt?: number | null;
+}
+
+export type SyncTable = 'tasks' | 'projects' | 'routines' | 'routineLogs' | 'rewards' | 'purchases' | 'notes';
+export const SYNC_TABLES: SyncTable[] = ['tasks', 'projects', 'routines', 'routineLogs', 'rewards', 'purchases', 'notes'];
