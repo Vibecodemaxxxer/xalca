@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { setLang, type Lang } from './i18n/lang';
 import { getMeta, initDevice, onLocalChange } from './db/db';
 import { initNotifications, isNative, reschedule } from './notify/notify';
 import { onRemoteChange, startAutoSync } from './sync/sync';
@@ -11,6 +12,7 @@ import './ui/styles.css';
 async function boot() {
   await initDevice();
   applyTheme((await getMeta<Theme>('theme')) ?? 'auto');
+  setLang((await getMeta<Lang>('lang')) ?? 'az');
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

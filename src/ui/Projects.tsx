@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react';
+import { tr } from '../i18n/lang';
 import type { Project, Task } from '../db/types';
 import { newTask, setTaskDone } from '../domain/ops';
 import { projectProgress, taskProgress } from '../domain/tree';
@@ -133,7 +134,7 @@ function ProjectView({ project: p }: { project: Project }) {
       )}
 
       <form className="quick" onSubmit={(e) => (e.preventDefault(), add())} style={{ marginTop: 14 }}>
-        <input type="text" placeholder="+ Yeni tapşırıq…" value={text} onChange={(e) => setText(e.target.value)} />
+        <input type="text" placeholder={tr('+ Yeni tapşırıq…', '+ Новая задача…')} value={text} onChange={(e) => setText(e.target.value)} />
       </form>
 
       <div className="tree">

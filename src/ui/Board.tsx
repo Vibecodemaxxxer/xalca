@@ -19,6 +19,7 @@ import type { Task, TaskStatus } from '../db/types';
 import { moveTask, newTask } from '../domain/ops';
 import { taskProgress } from '../domain/tree';
 import { Az } from '../i18n/Az';
+import { tr } from '../i18n/lang';
 import { today } from '../lib/date';
 import { Bar } from './common';
 import { useData } from './data';
@@ -137,8 +138,8 @@ export function BoardView() {
     <>
       <div className="board-tools">
         <select value={filter.project} onChange={(e) => setFilter({ ...filter, project: e.target.value })} aria-label="Проект">
-          <option value="all">Hamısı — все задачи</option>
-          <option value="none">Layihəsiz — без проекта</option>
+          <option value="all">{tr('Hamısı', 'Все задачи', 'option')}</option>
+          <option value="none">{tr('Layihəsiz', 'Без проекта', 'option')}</option>
           {projects
             .filter((p) => !p.archived)
             .map((p) => (
@@ -153,7 +154,7 @@ export function BoardView() {
         </label>
       </div>
       <form className="quick" onSubmit={(e) => (e.preventDefault(), add())}>
-        <input type="text" placeholder="+ Yeni tapşırıq…" value={text} onChange={(e) => setText(e.target.value)} />
+        <input type="text" placeholder={tr('+ Yeni tapşırıq…', '+ Новая задача…')} value={text} onChange={(e) => setText(e.target.value)} />
       </form>
 
       <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setActive(null)}>

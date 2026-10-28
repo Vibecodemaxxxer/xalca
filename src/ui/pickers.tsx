@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { tr } from '../i18n/lang';
 import type { Metric, Recurrence } from '../db/types';
 import { describe } from '../domain/recurrence';
 import { Az } from '../i18n/Az';
@@ -193,7 +194,7 @@ export function RecurrencePicker({ value: r, onChange }: { value: Recurrence; on
                     {i + 1}
                   </option>
                 ))}
-                <option value={-1}>Ayın sonu — последний день</option>
+                <option value={-1}>{tr('Ayın sonu', 'Последний день', 'option')}</option>
               </select>
             </div>
           ) : (
@@ -201,14 +202,14 @@ export function RecurrencePicker({ value: r, onChange }: { value: Recurrence; on
               <select value={r.on.nth} onChange={(e) => 'nth' in r.on && onChange({ ...r, on: { ...r.on, nth: Number(e.target.value) } })}>
                 {NTH.map((n) => (
                   <option key={n.v} value={n.v}>
-                    {n.az} — {n.ru}
+                    {tr(n.az, n.ru, 'option')}
                   </option>
                 ))}
               </select>
               <select value={r.on.weekday} onChange={(e) => 'nth' in r.on && onChange({ ...r, on: { ...r.on, weekday: Number(e.target.value) } })}>
                 {AZ_WEEKDAYS.map((w, i) => (
                   <option key={i} value={i}>
-                    {w} — {RU_WEEKDAYS[i].toLowerCase()}
+                    {tr(w, RU_WEEKDAYS[i], 'option')}
                   </option>
                 ))}
               </select>

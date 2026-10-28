@@ -71,7 +71,7 @@ export function RoutineRow({ routine: r, day, log, streak, onOpen }: { routine: 
           <span>{describe(r.recurrence)}</span>
           {streak > 1 && (
             <span className="streak">
-              <Az ru={`Стрик: ${streak} раз подряд`}>{`× ${streak}`}</Az>
+              <Az ru={`${streak} подряд`}>{`× ${streak}`}</Az>
             </span>
           )}
         </div>

@@ -1,6 +1,7 @@
 import { App as CapApp } from '@capacitor/app';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Az } from './i18n/Az';
+import { useLang } from './i18n/lang';
 import { isNative } from './notify/notify';
 import { Buta, Icon } from './ui/common';
 import { RoutinesScreen, TasksScreen, TodayScreen } from './ui/screens';
@@ -26,6 +27,8 @@ const fromHash = (): { tab: Tab; arg?: string } => {
 
 export function App() {
   const [{ tab, arg }, setRoute] = useState(fromHash);
+  // Строки в placeholder/option берутся через tr() при рендере — при смене языка перерисовываем экран.
+  const lang = useLang();
 
   useEffect(() => {
     const on = () => {
@@ -69,7 +72,7 @@ export function App() {
       </nav>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="border-strip" />
-        <main className="main">
+        <main className="main" key={lang}>
           <UpdateBanner />
           {tab === 'today' && <TodayScreen />}
           {tab === 'routines' && <RoutinesScreen />}

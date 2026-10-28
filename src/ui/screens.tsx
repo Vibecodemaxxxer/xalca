@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { tr } from '../i18n/lang';
 import type { Routine, RoutineLog, Task } from '../db/types';
 import { newTask } from '../domain/ops';
 import { isDue, streak, upcoming } from '../domain/recurrence';
@@ -56,7 +57,7 @@ function QuickAdd({ date }: { date?: Day }) {
   };
   return (
     <form className="quick" onSubmit={(e) => (e.preventDefault(), add())}>
-      <input type="text" placeholder="+ Yeni tapşırıq…" value={text} onChange={(e) => setText(e.target.value)} />
+      <input type="text" placeholder={tr('+ Yeni tapşırıq…', '+ Новая задача…')} value={text} onChange={(e) => setText(e.target.value)} />
     </form>
   );
 }

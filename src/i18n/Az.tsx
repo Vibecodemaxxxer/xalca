@@ -1,36 +1,47 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { dict } from './dict';
+import { getLang } from './lang';
 
 // Одновременно открыта только одна подсказка.
 let closeOpen: (() => void) | null = null;
 
 const LONG_PRESS = 450;
+const INTERACTIVE = 'button, a, label, select, [role=button]';
 
 /**
- * Азербайджанское слово с переводом во всплывашке.
+ * Слово интерфейса на двух языках. Видимый вариант выбирает CSS по html[data-lang];
+ * всплывашка показывает другой вариант.
  * ПК — при наведении. Телефон — по тапу, а внутри кнопок/ссылок — по долгому нажатию,
  * чтобы обычный тап продолжал нажимать кнопку.
  */
 export function Az({ children, ru }: { children: string; ru?: string }) {
   const tr = ru ?? dict[children];
+  // Как подпись — короткая часть перевода («Привычки (рутина)» → «Привычки»); пояснение остаётся во всплывашке.
+  const short = tr?.split(/ \(| — /)[0];
   const ref = useRef<HTMLSpanElement>(null);
-  const [rect, setRect] = useState<DOMRect | null>(null);
+  const [tip, setTip] = useState<{ rect: DOMRect; text: string } | null>(null);
   const press = useRef<{ timer?: ReturnType<typeof setTimeout>; fired: boolean }>({ fired: false });
 
+  const interactive = () => !!ref.current?.closest(INTERACTIVE);
+
   const show = () => {
-    if (!ref.current) return;
+    if (!ref.current || !tr) return;
+    const lang = getLang();
+    if (lang === 'ru') return;
+    // В смешанном режиме в кнопках виден русский — подсказываем оригинал.
+    const text = lang === 'mixed' && interactive() ? children : tr;
     if (closeOpen && closeOpen !== hide) closeOpen();
     closeOpen = hide;
-    setRect(ref.current.getBoundingClientRect());
+    setTip({ rect: ref.current.getBoundingClientRect(), text });
   };
   const hide = () => {
-    setRect(null);
+    setTip(null);
     if (closeOpen === hide) closeOpen = null;
   };
 
   useEffect(() => {
-    if (!rect) return;
+    if (!tip) return;
     const off = (e: Event) => {
       if (!ref.current?.contains(e.target as Node)) hide();
     };
@@ -43,11 +54,9 @@ export function Az({ children, ru }: { children: string; ru?: string }) {
       document.removeEventListener('pointerdown', off);
       window.removeEventListener('scroll', hide, true);
     };
-  }, [rect]);
+  }, [tip]);
 
   if (!tr) return <>{children}</>;
-
-  const interactive = () => !!ref.current?.closest('button, a, label, select, [role=button]');
 
   return (
     <span
@@ -75,20 +84,21 @@ export function Az({ children, ru }: { children: string; ru?: string }) {
           return;
         }
         if (!matchMedia('(hover: hover)').matches && !interactive()) {
-          if (rect) hide();
+          if (tip) hide();
           else show();
         }
       }}
     >
-      {children}
-      {rect && createPortal(<Tip rect={rect} text={tr} />, document.body)}
+      <span className="az-t">{children}</span>
+      <span className="ru-t">{short}</span>
+      {tip && createPortal(<Tip rect={tip.rect} text={tip.text} />, document.body)}
     </span>
   );
 }
 
 function Tip({ rect, text }: { rect: DOMRect; text: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ left: rect.left, top: rect.top - 8, below: false });
+  const [pos, setPos] = useState({ left: rect.left, top: rect.top - 8 });
 
   useEffect(() => {
     const el = ref.current!;
@@ -96,7 +106,7 @@ function Tip({ rect, text }: { rect: DOMRect; text: ReactNode }) {
     const h = el.offsetHeight;
     const left = Math.max(8, Math.min(rect.left + rect.width / 2 - w / 2, window.innerWidth - w - 8));
     const below = rect.top - h - 8 < 8;
-    setPos({ left, top: below ? rect.bottom + 6 : rect.top - h - 6, below });
+    setPos({ left, top: below ? rect.bottom + 6 : rect.top - h - 6 });
   }, [rect]);
 
   return (

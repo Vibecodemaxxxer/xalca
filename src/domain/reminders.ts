@@ -1,4 +1,5 @@
 import type { Routine, RoutineLog, Task } from '../db/types';
+import { tr } from '../i18n/lang';
 import { addDays, at, today, type Day } from '../lib/date';
 import { upcoming } from './recurrence';
 
@@ -32,7 +33,7 @@ export function computeReminders(tasks: Task[], routines: Routine[], logs: Routi
   for (const t of tasks) {
     if (t.deletedAt || t.status === 'done' || !t.date || !t.time || t.reminder == null) continue;
     const due = at(t.date, t.time);
-    push(`t:${t.id}:${t.date}:${t.time}`, t.title, `Tapşırıq · ${t.time} (${lead(t.reminder)})`, new Date(due.getTime() - t.reminder * 60_000));
+    push(`t:${t.id}:${t.date}:${t.time}`, t.title, `${tr('Tapşırıq', 'Задача', 'text')} · ${t.time} (${lead(t.reminder)})`, new Date(due.getTime() - t.reminder * 60_000));
   }
 
   const done = new Map<string, Set<Day>>();
@@ -50,7 +51,7 @@ export function computeReminders(tasks: Task[], routines: Routine[], logs: Routi
     for (const day of upcoming(r.recurrence, from, HORIZON_DAYS, last)) {
       if (d.has(day)) continue;
       const due = at(day, r.time);
-      push(`r:${r.id}:${day}`, r.title, `Vərdiş · ${r.time} (${lead(r.reminder)})`, new Date(due.getTime() - r.reminder * 60_000));
+      push(`r:${r.id}:${day}`, r.title, `${tr('Vərdiş', 'Привычка', 'text')} · ${r.time} (${lead(r.reminder)})`, new Date(due.getTime() - r.reminder * 60_000));
     }
   }
   return out.sort((a, b) => +a.at - +b.at);

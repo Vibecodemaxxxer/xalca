@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { tr } from '../i18n/lang';
 import { remove, update } from '../db/db';
 import type { Metric, Project, Recurrence, Routine, Task } from '../db/types';
 import { deleteProject, deleteTask, moveToProject, newProject, newRoutine, newTask, PROJECT_COLORS, saveTask, setTaskDone } from '../domain/ops';
@@ -118,7 +119,7 @@ function TaskForm({ task, defaults, onClose, onOpen }: { task?: Task; defaults?:
         {!parentId && (
           <Field label="Layihə">
             <select value={projectId ?? ''} onChange={(e) => setProjectId(e.target.value || null)}>
-              <option value="">— Layihəsiz (без проекта)</option>
+              <option value="">{tr('— Layihəsiz', '— Без проекта', 'option')}</option>
               {projects
                 .filter((p) => !p.archived || p.id === projectId)
                 .map((p) => (
@@ -174,7 +175,7 @@ export function QuickSub({ parent, autoFocus, onDone }: { parent: Task; autoFocu
       type="text"
       className="quick-sub"
       autoFocus={autoFocus}
-      placeholder="+ Alt tapşırıq…"
+      placeholder={tr('+ Alt tapşırıq…', '+ Подзадача…')}
       value={text}
       onChange={(e) => setText(e.target.value)}
       onBlur={() => !text.trim() && onDone?.()}

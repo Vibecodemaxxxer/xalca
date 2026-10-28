@@ -375,3 +375,11 @@ code { background: var(--surface-2); padding: 1px 5px; border-radius: 5px; font-
 .board-card.done .title { color: var(--muted); text-decoration: line-through; }
 .board-card.overlay { cursor: grabbing; transform: rotate(2deg); box-shadow: 0 12px 30px rgba(0, 0, 0, .22); }
 .cal-cell.today .cal-wd-inline { color: inherit; opacity: .85; }
+
+/* ---- язык интерфейса (src/i18n/lang.ts) ---- */
+.ru-t { display: none; }
+html[data-lang='ru'] .az-t { display: none; }
+html[data-lang='ru'] .ru-t { display: inline; }
+html[data-lang='ru'] .az { cursor: inherit; }
+html[data-lang='mixed'] :is(button, a, label, select, [role=button]) .az-t { display: none; }
+html[data-lang='mixed'] :is(button, a, label, select, [role=button]) .ru-t { display: inline; }

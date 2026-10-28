@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { tr } from '../i18n/lang';
 import type { Recurrence, Routine, Task } from '../db/types';
 import { itemsByDay, monthGrid, weekDays, type DayItems } from '../domain/calendar';
 import { moveTaskToDay, newTask } from '../domain/ops';
@@ -136,7 +137,7 @@ export function CalendarView() {
 
       <Section title={sl.az} className="cal-agenda">
         <form className="quick" onSubmit={(e) => (e.preventDefault(), add())}>
-          <input type="text" placeholder={`+ Yeni tapşırıq — ${sl.ru.toLowerCase()}`} value={text} onChange={(e) => setText(e.target.value)} />
+          <input type="text" placeholder={tr(`+ Yeni tapşırıq — ${sl.az}`, `+ Новая задача — ${sl.ru.toLowerCase()}`)} value={text} onChange={(e) => setText(e.target.value)} />
         </form>
         <div className="list">
           {selItems.routines.map(({ routine: r, log }) =>

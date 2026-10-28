@@ -2,7 +2,8 @@ import { Browser } from '@capacitor/browser';
 import { useEffect, useState } from 'react';
 import { getMeta, setMeta } from '../db/db';
 import { Az } from '../i18n/Az';
-import { isNative, permissionState, requestPermission } from '../notify/notify';
+import { setLang, useLang, type Lang } from '../i18n/lang';
+import { isNative, permissionState, requestPermission, reschedule } from '../notify/notify';
 import { authUrl, disconnect, finishAuth, getAppKey, isConnected, setAppKey } from '../sync/dropbox';
 import { APP_VERSION, checkForUpdate, lastCheck, onUpdateState } from '../update/update';
 import { getSyncState, onSyncState, syncNow, type SyncState } from '../sync/sync';
@@ -30,6 +31,7 @@ export function SettingsScreen() {
           <Az>Ayarlar</Az>
         </h1>
       </div>
+      <LangCard />
       <DropboxCard />
       <NotifyCard />
       <ThemeCard />
@@ -224,6 +226,36 @@ function NotifyCard() {
           </ol>
         </details>
       )}
+    </div>
+  );
+}
+
+function LangCard() {
+  const lang = useLang();
+  const pick = (l: Lang) => {
+    setLang(l);
+    void setMeta('lang', l);
+    void reschedule(); // тексты уведомлений
+  };
+  // Названия вариантов — каждое на своём языке, чтобы было понятно при любом выбранном.
+  const opts: [Lang, string, string][] = [
+    ['az', 'Azərbaycanca', 'Всё по-азербайджански, перевод — тапом или наведением'],
+    ['ru', 'Русский', 'Всё по-русски'],
+    ['mixed', 'Смешанный', 'Кнопки по-русски, остальной текст по-азербайджански'],
+  ];
+  return (
+    <div className="card">
+      <h3>
+        <Az>Dil</Az>
+      </h3>
+      <div className="seg">
+        {opts.map(([v, label]) => (
+          <button key={v} className={lang === v ? 'on' : ''} onClick={() => pick(v)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <p className="hint" style={{ marginBottom: 0 }}>{opts.find((o) => o[0] === lang)![2]}</p>
     </div>
   );
 }
