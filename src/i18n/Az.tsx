@@ -15,10 +15,10 @@ const INTERACTIVE = 'button, a, label, select, [role=button]';
  * ПК — при наведении. Телефон — по тапу, а внутри кнопок/ссылок — по долгому нажатию,
  * чтобы обычный тап продолжал нажимать кнопку.
  */
-export function Az({ children, ru }: { children: string; ru?: string }) {
+export function Az({ children, ru, full }: { children: string; ru?: string; full?: boolean }) {
   const tr = ru ?? dict[children];
   // Как подпись — короткая часть перевода («Привычки (рутина)» → «Привычки»); пояснение остаётся во всплывашке.
-  const short = tr?.split(/ \(| — /)[0];
+  const short = full ? tr : tr?.split(/ \(| — /)[0];
   const ref = useRef<HTMLSpanElement>(null);
   const [tip, setTip] = useState<{ rect: DOMRect; text: string } | null>(null);
   const press = useRef<{ timer?: ReturnType<typeof setTimeout>; fired: boolean }>({ fired: false });

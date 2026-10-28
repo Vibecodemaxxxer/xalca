@@ -435,3 +435,61 @@ html[data-lang='mixed'] :is(button, a, label, select, [role=button]) .ru-t { dis
   animation: xpfloat 1.4s ease-out forwards;
 }
 @keyframes xpfloat { 0% { opacity: 0; transform: translate(-50%, 10px); } 15% { opacity: 1; transform: translate(-50%, 0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -24px); } }
+
+/* ---- цитаты ---- */
+.az-tip { white-space: pre-line; }
+.quote { margin: 28px 0 8px; padding: 14px 16px 12px 44px; position: relative; border-radius: var(--radius); background: color-mix(in srgb, var(--oxra) 9%, transparent); }
+.quote::before { content: '❝'; position: absolute; left: 12px; top: 6px; font: 34px var(--serif); color: var(--oxra); opacity: .7; }
+.quote blockquote { margin: 0; font: italic 15.5px/1.5 var(--serif); white-space: pre-line; }
+.quote figcaption { margin-top: 6px; font-size: 13px; color: var(--muted); }
+.sheet .quote { margin: 18px 0 4px; text-align: left; }
+.quote-src { display: block; font-size: 11px; opacity: .7; margin-top: 2px; }
+
+/* ---- çay fasiləsi ---- */
+.today-tools { display: flex; align-items: center; gap: 8px; }
+.tea-btn {
+  display: inline-flex; align-items: center; gap: 4px; padding: 6px 9px; border-radius: 12px; color: var(--text);
+  border: 1px solid var(--line); background: var(--surface); font-variant-numeric: tabular-nums; font-size: 13px;
+}
+.tea-btn.work { border-color: var(--oxra); }
+.tea-btn.break { border-color: var(--yasil); background: color-mix(in srgb, var(--yasil) 12%, var(--surface)); }
+.tea { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+.tea .armudu { color: var(--text); }
+.tea-phase { font: 600 15px var(--serif); color: var(--nar); }
+.tea-time { font: 700 44px/1 var(--serif); font-variant-numeric: tabular-nums; }
+.tea-cups { margin-top: 4px; }
+.armudu .steam path { animation: steam 2.4s ease-in-out infinite; }
+.armudu .steam path:nth-child(2) { animation-delay: .5s; }
+.armudu .steam path:nth-child(3) { animation-delay: 1s; }
+@keyframes steam { 0%, 100% { opacity: .1; transform: translateY(1px); } 50% { opacity: .8; transform: translateY(-1px); } }
+
+/* ---- ивенты ---- */
+.event-banner {
+  display: flex; align-items: center; gap: 12px; margin: 10px 0; padding: 12px 14px; border-radius: var(--radius); cursor: pointer; color: #fff;
+  background: linear-gradient(120deg, var(--ev), color-mix(in srgb, var(--ev) 70%, #000)); box-shadow: var(--shadow);
+}
+.event-banner .bar { background: rgba(255, 255, 255, .25); }
+.event-banner .bar > i { background: var(--ev-accent); }
+.ev-badge { flex: none; width: 40px; height: 40px; }
+.ev-badge.big { width: 64px; height: 64px; }
+.ev-body { flex: 1; min-width: 0; }
+.ev-title { font: 600 16px var(--serif); }
+.ev-sub { font-size: 13px; opacity: .85; }
+.ev-join { background: var(--ev-accent); border-color: var(--ev-accent); color: #2a1d17; font-weight: 600; }
+.ev-go svg { width: 18px; height: 18px; opacity: .8; }
+.event-hero { margin: 0 -16px; padding: 18px 16px 16px; color: #fff; background: linear-gradient(140deg, var(--ev), color-mix(in srgb, var(--ev) 60%, #000)); }
+@media (min-width: 900px) { .event-hero { margin: 16px 0 0; border-radius: var(--radius); } }
+.event-hero .back { color: #fff; opacity: .85; padding: 4px 6px; margin-left: -6px; }
+.event-hero h1 { margin: 4px 0 2px; font: 700 26px var(--serif); }
+.ev-hero-row { display: flex; align-items: center; gap: 14px; }
+.ev-dates { font-size: 13.5px; opacity: .9; }
+.ev-intro { margin: 10px 0 0; opacity: .95; }
+.ev-days { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 5px; margin-top: 10px; }
+.ev-day { text-align: center; padding: 6px 0; border-radius: 8px; font-size: 13px; border: 1px solid var(--line); background: var(--surface); }
+.ev-day.done { background: var(--ev); border-color: var(--ev); color: #fff; }
+.ev-day.miss { opacity: .55; text-decoration: line-through; }
+.ev-day.future { color: var(--muted); border-style: dashed; }
+.ev-day.today { outline: 2px solid var(--ev-accent); outline-offset: 1px; }
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+.badge-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); font-size: 13px; text-align: center; }
+.badge-item .ev-badge { width: 48px; height: 48px; }

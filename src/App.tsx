@@ -6,12 +6,13 @@ import { isNative } from './notify/notify';
 import { Buta, Icon } from './ui/common';
 import { RoutinesScreen, TasksScreen, TodayScreen } from './ui/screens';
 import { DataProvider } from './ui/data';
+import { EventScreen, EventsWatcher } from './ui/Events';
 import { GameWatcher, ProfileScreen, RankBadge } from './ui/Game';
 import { ProjectsScreen } from './ui/Projects';
 import { SettingsScreen } from './ui/Settings';
 import { UpdateBanner } from './ui/UpdateBanner';
 
-type Tab = 'today' | 'routines' | 'tasks' | 'projects' | 'settings' | 'profile';
+type Tab = 'today' | 'routines' | 'tasks' | 'projects' | 'settings' | 'profile' | 'event';
 const TABS: { id: Tab; az: string; icon: ReactNode }[] = [
   { id: 'today', az: 'Bu gün', icon: Icon.today },
   { id: 'routines', az: 'Vərdişlər', icon: Icon.routine },
@@ -24,7 +25,7 @@ const TABS: { id: Tab; az: string; icon: ReactNode }[] = [
 const fromHash = (): { tab: Tab; arg?: string } => {
   const [h, arg] = location.hash.slice(1).split('/') as [Tab, string?];
   // профиль не в меню — открывается по значку сословия
-  return TABS.some((t) => t.id === h) || h === 'profile' ? { tab: h, arg } : { tab: 'today' };
+  return TABS.some((t) => t.id === h) || h === 'profile' || h === 'event' ? { tab: h, arg } : { tab: 'today' };
 };
 
 export function App() {
@@ -80,12 +81,14 @@ export function App() {
         <main className="main" key={lang}>
           <UpdateBanner />
           <GameWatcher />
+          <EventsWatcher />
           {tab === 'today' && <TodayScreen />}
           {tab === 'routines' && <RoutinesScreen />}
           {tab === 'tasks' && <TasksScreen />}
           {tab === 'projects' && <ProjectsScreen openId={arg} />}
           {tab === 'settings' && <SettingsScreen />}
           {tab === 'profile' && <ProfileScreen />}
+          {tab === 'event' && arg && <EventScreen runId={arg} />}
         </main>
       </div>
     </div>

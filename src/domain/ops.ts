@@ -2,6 +2,9 @@ import { create, db, update, upsert } from '../db/db';
 import type { Base, Metric, Project, Routine, RoutineLog, Task, TaskStatus } from '../db/types';
 import { type Day } from '../lib/date';
 import { imageRefs } from '../sync/images';
+import type { EventRun } from '../events/types';
+import { routineIdOf } from '../events/runtime';
+import { tr } from '../i18n/lang';
 import { childIndex, descendants, subtasksComplete } from './tree';
 
 export const logId = (routineId: string, day: Day) => `${routineId}:${day}`;
@@ -144,4 +147,27 @@ export async function moveTask(t: Task, status: TaskStatus, order: number) {
 /** Перенести задачу на другой день (время сохраняется). */
 export function moveTaskToDay(t: Task, date: Day) {
   return update<Task>('tasks', t.id, { date });
+}
+
+/** Подключиться к ивенту: создать его привычки с постоянными id (без дублей между устройствами). */
+export async function joinEvent(run: EventRun) {
+  for (const er of run.def.routines) {
+    await upsert<Routine>('routines', routineIdOf(run.runId, er.key), {
+      title: tr(er.title.az, er.title.ru, 'text'),
+      description: er.description ?? '',
+      recurrence: er.recurrence(run.start, run.end),
+      time: er.time ?? null,
+      reminder: er.reminder ?? null,
+      metric: er.metric ?? { type: 'check' },
+      active: true,
+      order: Date.now(),
+      eventId: run.runId,
+    });
+  }
+}
+
+/** Выключить привычки закончившихся ивентов (история и значки остаются). */
+export async function finishEndedEvents(routines: Routine[], runs: EventRun[]) {
+  const ended = new Set(runs.filter((r) => r.status === 'finished').map((r) => r.runId));
+  for (const r of routines) if (r.eventId && r.active && ended.has(r.eventId)) await update<Routine>('routines', r.id, { active: false });
 }

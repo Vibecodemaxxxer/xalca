@@ -9,7 +9,10 @@ import { Empty, Icon, Section } from './common';
 import { BoardView } from './Board';
 import { CalendarView } from './Calendar';
 import { useData } from './data';
+import { QuoteCard } from './Quote';
 import { RankBadge } from './Game';
+import { TeaButton } from './Tea';
+import { EventBanners } from './Events';
 import { RoutineSheet, TaskSheet } from './Editors';
 import { dayLabel, longDate } from './fmt';
 import { RoutineRow, TaskRow } from './Rows';
@@ -98,10 +101,14 @@ export function TodayScreen() {
             <Az ru={head.ru}>{head.az}</Az>
           </div>
         </div>
-        <div className="today-rank">
-          <RankBadge />
+        <div className="today-tools">
+          <TeaButton />
+          <span className="today-rank">
+            <RankBadge />
+          </span>
         </div>
       </div>
+      <EventBanners />
       <QuickAdd date={t} />
 
       {nothing && <Empty az="Bu gün heç nə yoxdur" />}
@@ -140,6 +147,7 @@ export function TodayScreen() {
         </Section>
       )}
 
+      <QuoteCard place="today" />
       <button className="fab" aria-label="Новая задача" onClick={() => setEditing({ kind: 'task', defaults: { date: t } })}>
         {Icon.plus}
       </button>
@@ -200,6 +208,7 @@ export function RoutinesScreen() {
           {list(paused)}
         </Section>
       )}
+      <QuoteCard place="routines" />
       <button className="fab" aria-label="Новая привычка" onClick={() => setEditing({ kind: 'routine' })}>
         {Icon.plus}
       </button>
@@ -302,6 +311,7 @@ function TaskList() {
           </div>
         </Section>
       )}
+      <QuoteCard place="tasks" />
       <button className="fab" aria-label="Новая задача" onClick={() => setEditing({ kind: 'task' })}>
         {Icon.plus}
       </button>

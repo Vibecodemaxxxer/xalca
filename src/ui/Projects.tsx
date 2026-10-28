@@ -6,6 +6,7 @@ import { projectProgress, taskProgress } from '../domain/tree';
 import { Az } from '../i18n/Az';
 import { Bar, Check, Empty, Icon, Section } from './common';
 import { useData } from './data';
+import { QuoteCard } from './Quote';
 import { ProjectSheet, QuickSub, TaskSheet } from './Editors';
 import { Markdown } from './Markdown';
 import { dayLabel } from './fmt';
@@ -67,6 +68,7 @@ function ProjectList() {
           <div className="project-grid">{archived.map(card)}</div>
         </Section>
       )}
+      <QuoteCard place="projects" />
       <button className="fab" aria-label="Новый проект" onClick={() => setCreating(true)}>
         {Icon.plus}
       </button>

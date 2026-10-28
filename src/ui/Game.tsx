@@ -5,6 +5,8 @@ import { Az } from '../i18n/Az';
 import { addDays, daysInMonth, parseDay, toDay, today, type Day } from '../lib/date';
 import { Bar, Buta, Icon, Sheet } from './common';
 import { useData } from './data';
+import { QuoteCard } from './Quote';
+import { EventBadges } from './Events';
 import { AZ_MONTHS, dayLabel, RU_MONTHS_NOM } from './fmt';
 
 // ---------------- значок сословия ----------------
@@ -245,6 +247,8 @@ export function ProfileScreen() {
           ))}
         </ol>
       </section>
+      <EventBadges />
+      <QuoteCard place="profile" />
 
     </>
   );
@@ -302,6 +306,7 @@ export function GameWatcher() {
               <Az ru={RANKS[rankUp].ru}>{RANKS[rankUp].az}</Az>
             </div>
             <p>{RANKS[rankUp].about}</p>
+            <QuoteCard place="rankup" salt={rankUp} />
             <button
               className="btn primary"
               onClick={() => {
