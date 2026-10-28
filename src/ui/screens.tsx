@@ -5,6 +5,8 @@ import { isDue, streak, upcoming } from '../domain/recurrence';
 import { Az } from '../i18n/Az';
 import { addDays, today, type Day } from '../lib/date';
 import { Empty, Icon, Section } from './common';
+import { BoardView } from './Board';
+import { CalendarView } from './Calendar';
 import { useData } from './data';
 import { RoutineSheet, TaskSheet } from './Editors';
 import { dayLabel, longDate } from './fmt';
@@ -203,7 +205,55 @@ export function RoutinesScreen() {
 
 // ---------------- Tapşırıqlar ----------------
 
+type View = 'list' | 'calendar' | 'board';
+const VIEW_KEY = 'xalca.tasksView';
+const VIEWS: { id: View; az: string }[] = [
+  { id: 'list', az: 'Siyahı' },
+  { id: 'calendar', az: 'Təqvim' },
+  { id: 'board', az: 'Lövhə' },
+];
+
+function loadView(): View {
+  try {
+    const v = localStorage.getItem(VIEW_KEY);
+    return v === 'calendar' || v === 'board' ? v : 'list';
+  } catch {
+    return 'list';
+  }
+}
+
 export function TasksScreen() {
+  const [view, setViewState] = useState<View>(loadView);
+  const setView = (v: View) => {
+    setViewState(v);
+    try {
+      localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      /* не запоминаем */
+    }
+  };
+  return (
+    <div className={`tasks-screen view-${view}`}>
+      <div className="page-head">
+        <h1>
+          <Az>Tapşırıqlar</Az>
+        </h1>
+        <div className="seg">
+          {VIEWS.map((v) => (
+            <button key={v.id} className={view === v.id ? 'on' : ''} onClick={() => setView(v.id)}>
+              <Az>{v.az}</Az>
+            </button>
+          ))}
+        </div>
+      </div>
+      {view === 'list' && <TaskList />}
+      {view === 'calendar' && <CalendarView />}
+      {view === 'board' && <BoardView />}
+    </div>
+  );
+}
+
+function TaskList() {
   const { tasks } = useData();
   const [editing, setEditing] = useState<Editing>(null);
   const [showDone, setShowDone] = useState(false);
@@ -224,10 +274,7 @@ export function TasksScreen() {
 
   return (
     <>
-      <div className="page-head">
-        <h1>
-          <Az>Tapşırıqlar</Az>
-        </h1>
+      <div className="list-tools">
         <button className="btn ghost" onClick={() => setShowDone(!showDone)}>
           <Az>{showDone ? 'Bağla' : 'Tamamlanmışları göstər'}</Az>
         </button>

@@ -287,3 +287,91 @@ code { background: var(--surface-2); padding: 1px 5px; border-radius: 5px; font-
 .page-head h1.project-title { color: var(--pc); }
 :root[data-theme='dark'] .page-head h1.project-title { color: color-mix(in srgb, var(--pc) 45%, var(--text)); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .page-head h1.project-title { color: color-mix(in srgb, var(--pc) 45%, var(--text)); } }
+
+/* ---- вкладка задач: переключатель видов ---- */
+.tasks-screen .page-head { flex-wrap: wrap; }
+.list-tools { display: flex; justify-content: flex-end; margin: -4px 0 4px; }
+@media (min-width: 900px) { .tasks-screen.view-board { margin-right: -60px; } }
+
+/* ---- календарь ---- */
+.cal-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.cal-nav { display: flex; align-items: center; gap: 2px; }
+.cal-nav .btn { padding: 6px 8px; }
+.cal-title { font: 600 18px var(--serif); min-width: 150px; text-align: center; }
+.cal-tools { display: flex; align-items: center; gap: 6px; }
+.cal-tools .btn { padding: 6px 10px; font-size: 13.5px; }
+
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+.cal-wd { text-align: center; font-size: 11.5px; color: var(--muted); padding: 2px 0 4px; text-transform: uppercase; letter-spacing: .04em; }
+.cal-cell {
+  min-height: 62px; padding: 5px 5px 6px; border-radius: 10px; cursor: pointer; min-width: 0;
+  background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px;
+  transition: border-color .12s, background .12s;
+}
+.cal-cell.outside { opacity: .45; }
+.cal-cell.today .cal-num { background: var(--nar); color: #fff; }
+.cal-cell.sel { border-color: var(--oxra); box-shadow: 0 0 0 2px color-mix(in srgb, var(--oxra) 35%, transparent); }
+.cal-cell.drop { background: color-mix(in srgb, var(--oxra) 16%, var(--surface)); border-style: dashed; }
+.cal-num { align-self: flex-start; font-size: 12.5px; font-weight: 600; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; display: grid; place-items: center; }
+.cal-wd-inline { display: none; }
+.cal-chips { display: none; flex-direction: column; gap: 2px; min-width: 0; }
+.cal-chip {
+  font-size: 12px; line-height: 1.3; padding: 2px 6px; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: var(--surface-2); border-left: 3px solid var(--mavi); cursor: grab;
+}
+.cal-chip.r { border-left-color: var(--oxra); cursor: pointer; }
+.cal-chip.done { opacity: .55; text-decoration: line-through; }
+.cal-more { font-size: 11.5px; color: var(--muted); padding-left: 4px; }
+.cal-dots { display: flex; flex-wrap: wrap; gap: 3px; padding-left: 3px; }
+.cal-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--mavi); }
+.cal-dots i.r { background: var(--oxra); }
+.cal-dots i.done { opacity: .4; }
+@media (min-width: 700px) {
+  .cal-cell { min-height: 96px; }
+  .cal-chips { display: flex; }
+  .cal-dots { display: none; }
+}
+/* неделя: на ПК — 7 высоких колонок, на телефоне — дни списком */
+.cal-week .cal-cell { min-height: 160px; }
+.cal-week .cal-chips { display: flex; }
+.cal-week .cal-dots { display: none; }
+@media (max-width: 699px) {
+  .cal-week { grid-template-columns: 1fr; }
+  .cal-week .cal-wd { display: none; }
+  .cal-week .cal-cell { min-height: 0; flex-direction: row; align-items: flex-start; gap: 10px; }
+  .cal-week .cal-wd-inline { display: inline; color: var(--muted); font-weight: 400; }
+  .cal-week .cal-num { display: flex; gap: 5px; height: auto; min-width: 66px; padding: 3px 8px; border-radius: 8px; white-space: nowrap; }
+  .cal-week .cal-chips { flex: 1; }
+}
+.cal-agenda { margin-top: 16px; }
+.row.planned { opacity: .75; cursor: pointer; box-shadow: none; border-style: dashed; }
+.plan-mark { flex: none; width: 26px; height: 26px; border-radius: 8px; border: 2px dashed var(--oxra); }
+
+/* ---- канбан ---- */
+.board-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 6px; }
+.board-tools select { width: auto; max-width: 100%; flex: 1 1 200px; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); }
+.toggle input { accent-color: var(--mavi); width: 16px; height: 16px; }
+.board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 10px; align-items: start; }
+@media (max-width: 760px) {
+  .board { grid-template-columns: repeat(3, 82%); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; margin-right: -16px; padding-right: 16px; }
+  .board-col { scroll-snap-align: start; }
+}
+.board-col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; min-height: 140px; transition: background .12s; }
+.board-col.over { background: color-mix(in srgb, var(--oxra) 18%, var(--surface-2)); }
+.board-col h2 { margin: 2px 4px 10px; font: 600 13px system-ui; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.board-col.col-doing h2 { color: var(--oxra); }
+.board-col.col-done h2 { color: var(--yasil); }
+.board-col h2 .count { font-weight: 400; }
+.board-list { display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
+.board-empty { text-align: center; color: var(--muted); padding: 16px 0; opacity: .6; }
+.board-card {
+  background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 11px;
+  padding: 9px 11px; box-shadow: var(--shadow); cursor: grab; touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.board-card .title { overflow-wrap: anywhere; }
+.board-card .meta { display: flex; flex-wrap: wrap; gap: 3px 10px; color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+.board-card .meta .late { color: var(--danger); }
+.board-card.done .title { color: var(--muted); text-decoration: line-through; }
+.board-card.overlay { cursor: grabbing; transform: rotate(2deg); box-shadow: 0 12px 30px rgba(0, 0, 0, .22); }
+.cal-cell.today .cal-wd-inline { color: inherit; opacity: .85; }

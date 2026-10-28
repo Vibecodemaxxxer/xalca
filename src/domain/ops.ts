@@ -1,5 +1,5 @@
 import { create, db, update, upsert } from '../db/db';
-import type { Base, Metric, Project, Routine, RoutineLog, Task } from '../db/types';
+import type { Base, Metric, Project, Routine, RoutineLog, Task, TaskStatus } from '../db/types';
 import { type Day } from '../lib/date';
 import { imageRefs } from '../sync/images';
 import { childIndex, descendants, subtasksComplete } from './tree';
@@ -128,4 +128,20 @@ export async function deleteProject(p: Project) {
   const tasks = await db.tasks.where('projectId').equals(p.id).toArray();
   for (const t of tasks) await update<Task>('tasks', t.id, { projectId: null });
   await update<Project>('projects', p.id, { deletedAt: Date.now() });
+}
+
+/** Переместить задачу на доске: новый статус и место в колонке. */
+export async function moveTask(t: Task, status: TaskStatus, order: number) {
+  const done = status === 'done';
+  await update<Task>('tasks', t.id, {
+    status,
+    order,
+    completedAt: done ? (t.completedAt ?? Date.now()) : null,
+  });
+  if (done !== (t.status === 'done')) await propagate(t.parentId);
+}
+
+/** Перенести задачу на другой день (время сохраняется). */
+export function moveTaskToDay(t: Task, date: Day) {
+  return update<Task>('tasks', t.id, { date });
 }
