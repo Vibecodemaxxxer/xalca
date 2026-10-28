@@ -112,4 +112,6 @@ export const dict: Record<string, string> = {
   'Çay vaxtı': 'Время чая — перерыв',
   'Bu gün içilən çay': 'Выпито чая сегодня',
   'Nişanlar': 'Значки',
+  'Bazar': 'Рынок наград',
+  'Qiymət': 'Цена (abbası)',
 };

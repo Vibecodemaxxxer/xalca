@@ -74,5 +74,22 @@ export interface RoutineLog extends Base {
   done: boolean;
 }
 
-export type SyncTable = 'tasks' | 'projects' | 'routines' | 'routineLogs';
-export const SYNC_TABLES: SyncTable[] = ['tasks', 'projects', 'routines', 'routineLogs'];
+/** Награда, которую можно «купить» за abbası. */
+export interface Reward extends Base {
+  title: string;
+  price: number;
+  /** Одноразовая награда после покупки исчезает из списка. */
+  repeatable: boolean;
+  order: number;
+}
+
+/** Покупка награды. Название и цена копируются, чтобы история не менялась при правке награды. */
+export interface Purchase extends Base {
+  rewardId: string;
+  title: string;
+  price: number;
+  at: number;
+}
+
+export type SyncTable = 'tasks' | 'projects' | 'routines' | 'routineLogs' | 'rewards' | 'purchases';
+export const SYNC_TABLES: SyncTable[] = ['tasks', 'projects', 'routines', 'routineLogs', 'rewards', 'purchases'];

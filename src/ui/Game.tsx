@@ -6,13 +6,14 @@ import { addDays, daysInMonth, parseDay, toDay, today, type Day } from '../lib/d
 import { Bar, Buta, Icon, Sheet } from './common';
 import { useData } from './data';
 import { QuoteCard } from './Quote';
+import { AbbasiAmount } from './Bazar';
 import { EventBadges } from './Events';
 import { AZ_MONTHS, dayLabel, RU_MONTHS_NOM } from './fmt';
 
 // ---------------- значок сословия ----------------
 
 export function RankBadge() {
-  const { xp } = useData();
+  const { xp, abbasi } = useData();
   const r = rankFor(xp.total);
   const todayXp = xp.byDay.get(today()) ?? 0;
   return (
@@ -22,7 +23,9 @@ export function RankBadge() {
         <span className="rb-name">
           <Az ru={r.rank.ru}>{r.rank.az}</Az>
         </span>
-        <span className="rb-xp">{todayXp > 0 ? `+${todayXp} XP` : `${xp.total} XP`}</span>
+        <span className="rb-xp">
+          {todayXp > 0 ? `+${todayXp} XP` : `${xp.total} XP`} · <AbbasiAmount n={abbasi.balance} size={11} />
+        </span>
       </span>
       <i className="rb-bar" style={{ width: `${Math.round(r.progress * 100)}%` }} />
     </button>
@@ -138,7 +141,7 @@ export function Carpet({ month, onPick, picked }: { month: Day; onPick?: (d: Day
 // ---------------- профиль ----------------
 
 export function ProfileScreen() {
-  const { xp } = useData();
+  const { xp, abbasi } = useData();
   const r = rankFor(xp.total);
   const [month, setMonth] = useState(() => today().slice(0, 8) + '01');
   const [picked, setPicked] = useState<Day | undefined>();
@@ -187,6 +190,14 @@ export function ProfileScreen() {
           </div>
         </div>
       </div>
+
+      <button className="card bazar-link" onClick={() => (location.hash = 'bazar')}>
+        <AbbasiAmount n={abbasi.balance} size={30} />
+        <span>
+          <Az ru="Рынок наград — потратить abbası">Bazar</Az>
+        </span>
+        <span className="ico">{Icon.chevron}</span>
+      </button>
 
       <div className="stats">
         <div className="stat">

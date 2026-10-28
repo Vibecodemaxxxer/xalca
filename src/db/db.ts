@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Base, Project, Routine, RoutineLog, SyncTable, Task } from './types';
+import type { Base, Project, Purchase, Reward, Routine, RoutineLog, SyncTable, Task } from './types';
 import { setNode, stamp } from './hlc';
 
 class XalcaDB extends Dexie {
@@ -7,6 +7,8 @@ class XalcaDB extends Dexie {
   projects!: Table<Project, string>;
   routines!: Table<Routine, string>;
   routineLogs!: Table<RoutineLog, string>;
+  rewards!: Table<Reward, string>;
+  purchases!: Table<Purchase, string>;
   /** Локальные настройки устройства, не синхронизируются. */
   meta!: Table<{ key: string; value: unknown }, string>;
   /** Картинки по sha-256 содержимого; uploaded: 0/1 — выгружена ли в Dropbox. */
@@ -22,6 +24,7 @@ class XalcaDB extends Dexie {
       meta: 'key',
     });
     this.version(2).stores({ blobs: 'hash, uploaded' });
+    this.version(3).stores({ rewards: 'id, updatedAt', purchases: 'id, rewardId, updatedAt' });
   }
 }
 

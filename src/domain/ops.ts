@@ -1,5 +1,5 @@
 import { create, db, update, upsert } from '../db/db';
-import type { Base, Metric, Project, Routine, RoutineLog, Task, TaskStatus } from '../db/types';
+import type { Base, Metric, Project, Purchase, Reward, Routine, RoutineLog, Task, TaskStatus } from '../db/types';
 import { type Day } from '../lib/date';
 import { imageRefs } from '../sync/images';
 import type { EventRun } from '../events/types';
@@ -170,4 +170,13 @@ export async function joinEvent(run: EventRun) {
 export async function finishEndedEvents(routines: Routine[], runs: EventRun[]) {
   const ended = new Set(runs.filter((r) => r.status === 'finished').map((r) => r.runId));
   for (const r of routines) if (r.eventId && r.active && ended.has(r.eventId)) await update<Routine>('routines', r.id, { active: false });
+}
+
+export function newReward(fields: { title: string; price: number; repeatable: boolean }) {
+  return create<Reward>('rewards', { ...fields, order: Date.now() });
+}
+
+/** Купить награду: запись покупки с копией названия и цены. */
+export function buyReward(r: Reward) {
+  return create<Purchase>('purchases', { rewardId: r.id, title: r.title, price: r.price, at: Date.now() });
 }
