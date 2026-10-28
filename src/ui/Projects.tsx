@@ -1,10 +1,11 @@
 import { useState, type CSSProperties } from 'react';
-import { tr } from '../i18n/lang';
 import type { Project, Task } from '../db/types';
-import { newTask, setTaskDone } from '../domain/ops';
+import { setTaskDone } from '../domain/ops';
 import { projectProgress, taskProgress } from '../domain/tree';
+import { projectBonus } from '../domain/xp';
 import { Az } from '../i18n/Az';
 import { Bar, Check, Empty, Icon, Section } from './common';
+import { QuickInput } from './TaskCard';
 import { useData } from './data';
 import { QuoteCard } from './Quote';
 import { ProjectSheet, QuickSub, TaskSheet } from './Editors';
@@ -32,13 +33,14 @@ function ProjectList() {
   const { projects, tasks } = useData();
   const [creating, setCreating] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
-  const active = projects.filter((p) => !p.archived).sort((a, b) => a.createdAt - b.createdAt);
-  const archived = projects.filter((p) => p.archived);
+  const active = projects.filter((p) => !p.archived && !p.completedAt).sort((a, b) => a.createdAt - b.createdAt);
+  const archived = projects.filter((p) => p.archived && !p.completedAt);
+  const completed = projects.filter((p) => p.completedAt).sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
 
   const card = (p: Project) => {
     const pr = projectProgress(p.id, tasks);
     return (
-      <button key={p.id} className="project-card" onClick={() => (location.hash = `projects/${p.id}`)} style={{ borderLeftColor: p.color }}>
+      <button key={p.id} className="project-card" onClick={() => (location.hash = `projects/${p.id}`)} style={{ '--pc': p.color } as CSSProperties}>
         <div className="title">{p.title}</div>
         <div className="meta">
           {pr.total ? `${pr.done}/${pr.total}` : <Az>Tapşırıq yoxdur</Az>}
@@ -63,6 +65,11 @@ function ProjectList() {
       </div>
       {!active.length && <Empty az="Hələ layihə yoxdur" />}
       <div className="project-grid">{active.map(card)}</div>
+      {completed.length > 0 && (
+        <Section title="Tamamlanmış layihələr" count={completed.length}>
+          <div className="project-grid">{completed.map(card)}</div>
+        </Section>
+      )}
       {showArchive && (
         <Section title="Arxiv">
           <div className="project-grid">{archived.map(card)}</div>
@@ -82,9 +89,10 @@ function ProjectView({ project: p }: { project: Project }) {
   const [editing, setEditing] = useState(false);
   const [open, setOpen] = useState<{ task?: Task; defaults?: Partial<Task> } | null>(null);
   const [collapsed, setCollapsed] = useState(loadCollapsed);
-  const [text, setText] = useState('');
   const roots = (children.get('') ?? []).filter((t) => t.projectId === p.id);
   const pr = projectProgress(p.id, tasks);
+  const allDone = pr.total > 0 && pr.done === pr.total;
+  const bonus = projectBonus(p.id, tasks);
 
   const toggle = (id: string) => {
     const next = new Set(collapsed);
@@ -98,11 +106,6 @@ function ProjectView({ project: p }: { project: Project }) {
     }
   };
 
-  const add = async () => {
-    if (!text.trim()) return;
-    await newTask({ title: text.trim(), projectId: p.id });
-    setText('');
-  };
 
   return (
     <>
@@ -129,15 +132,36 @@ function ProjectView({ project: p }: { project: Project }) {
         </button>
       </div>
       {pr.total > 0 && <Bar cur={pr.done} target={pr.total} />}
+      {p.completedAt ? (
+        <div className="project-done">
+          <span>
+            ✓ <Az ru="Проект завершён">Layihə tamamlandı</Az> · +{bonus} XP
+          </span>
+          <button className="btn small" onClick={() => void update<Project>('projects', p.id, { completedAt: null })}>
+            <Az ru="Вернуть в работу">Geri qaytar</Az>
+          </button>
+        </div>
+      ) : (
+        allDone && (
+          <div className="project-done">
+            <span>
+              <Az ru="Все задачи выполнены! Заверши проект и получи бонус — половину наград за его задачи.">Bütün tapşırıqlar hazırdır!</Az>
+            </span>
+            <button className="btn gold" onClick={() => void update<Project>('projects', p.id, { completedAt: Date.now() })}>
+              <Az>Layihəni tamamla</Az> +{bonus}
+            </button>
+          </div>
+        )
+      )}
       {p.description.trim() && (
         <div className="card project-desc">
           <Markdown source={p.description} onChange={(md) => void update<Project>('projects', p.id, { description: md })} />
         </div>
       )}
 
-      <form className="quick" onSubmit={(e) => (e.preventDefault(), add())} style={{ marginTop: 14 }}>
-        <input type="text" placeholder={tr('+ Yeni tapşırıq…', '+ Новая задача…')} value={text} onChange={(e) => setText(e.target.value)} />
-      </form>
+      <div style={{ marginTop: 14 }}>
+        <QuickInput defaults={{ projectId: p.id }} />
+      </div>
 
       <div className="tree">
         {roots.map((t) => (

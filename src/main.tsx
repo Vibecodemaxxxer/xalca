@@ -7,6 +7,7 @@ import { initNotifications, isNative, reschedule } from './notify/notify';
 import { onRemoteChange, startAutoSync } from './sync/sync';
 import { initUpdates } from './update/update';
 import { applyTheme, type Theme } from './ui/Settings';
+import '@fontsource-variable/nunito';
 import './ui/styles.css';
 
 async function boot() {

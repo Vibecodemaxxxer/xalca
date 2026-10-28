@@ -114,4 +114,10 @@ export const dict: Record<string, string> = {
   'Nişanlar': 'Значки',
   'Bazar': 'Рынок наград',
   'Qiymət': 'Цена (abbası)',
+  'Kiçik': 'Маленькая',
+  'Orta': 'Обычная',
+  'Böyük': 'Большая',
+  'Həftə sonu': 'На выходных',
+  'Layihəni tamamla': 'Завершить проект',
+  'Tamamlanmış layihələr': 'Завершённые проекты',
 };

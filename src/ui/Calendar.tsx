@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react';
 import { tr } from '../i18n/lang';
 import type { Recurrence, Routine, Task } from '../db/types';
 import { itemsByDay, monthGrid, weekDays, type DayItems } from '../domain/calendar';
-import { moveTaskToDay, newTask } from '../domain/ops';
+import { moveTaskToDay } from '../domain/ops';
 import { Az } from '../i18n/Az';
 import { parseDay, toDay, today, type Day } from '../lib/date';
 import { Icon, Section } from './common';
+import { QuickInput } from './TaskCard';
 import { useData } from './data';
 import { RoutineSheet, TaskSheet } from './Editors';
 import { AZ_MONTHS, AZ_WD_SHORT, dayLabel, RU_MONTHS_NOM, RU_WD_SHORT } from './fmt';
@@ -37,7 +38,6 @@ export function CalendarView() {
   const [anchor, setAnchor] = useState(today());
   const [sel, setSel] = useState(today());
   const [editing, setEditing] = useState<{ task?: Task; routine?: Routine; date?: Day } | null>(null);
-  const [text, setText] = useState('');
   const [dragOver, setDragOver] = useState<Day | null>(null);
   const t = today();
 
@@ -62,11 +62,6 @@ export function CalendarView() {
       ? { az: `${cap(AZ_MONTHS[month])} ${a.getFullYear()}`, ru: `${RU_MONTHS_NOM[month]} ${a.getFullYear()}` }
       : { az: `${dayLabel(days[0]).az} – ${dayLabel(days[6]).az}`, ru: `${dayLabel(days[0]).ru} – ${dayLabel(days[6]).ru}` };
 
-  const add = async () => {
-    if (!text.trim()) return;
-    await newTask({ title: text.trim(), date: sel });
-    setText('');
-  };
 
   const selItems = items.get(sel) ?? { tasks: [], routines: [] };
   const sl = dayLabel(sel);
@@ -136,9 +131,7 @@ export function CalendarView() {
       </div>
 
       <Section title={sl.az} className="cal-agenda">
-        <form className="quick" onSubmit={(e) => (e.preventDefault(), add())}>
-          <input type="text" placeholder={tr(`+ Yeni tapşırıq — ${sl.az}`, `+ Новая задача — ${sl.ru.toLowerCase()}`)} value={text} onChange={(e) => setText(e.target.value)} />
-        </form>
+        <QuickInput key={sel} defaults={{ date: sel }} placeholder={tr(`Yeni tapşırıq — ${sl.az}`, `Новая задача — ${sl.ru.toLowerCase()}`)} />
         <div className="list">
           {selItems.routines.map(({ routine: r, log }) =>
             sel <= t ? (

@@ -278,7 +278,7 @@ export function GameWatcher() {
     prevTotal.current = xp.total;
     // Прирост за одно действие пользователя. Первый рендер и большие скачки (история пришла синком
     // с другого устройства) — не «заработано сейчас»: без всплывашки и без праздника.
-    const earned = prev != null && xp.total > prev && xp.total - prev <= 60 ? xp.total - prev : 0;
+    const earned = prev != null && xp.total > prev && xp.total - prev <= 200 ? xp.total - prev : 0;
     const index = rankFor(xp.total).index;
 
     void (async () => {

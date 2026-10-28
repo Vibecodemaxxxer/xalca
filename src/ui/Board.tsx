@@ -16,12 +16,13 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useMemo, useState } from 'react';
 import type { Task, TaskStatus } from '../db/types';
-import { moveTask, newTask } from '../domain/ops';
+import { moveTask } from '../domain/ops';
 import { taskProgress } from '../domain/tree';
 import { Az } from '../i18n/Az';
 import { tr } from '../i18n/lang';
 import { today } from '../lib/date';
 import { Bar } from './common';
+import { QuickInput } from './TaskCard';
 import { useData } from './data';
 import { TaskSheet } from './Editors';
 import { dayLabel } from './fmt';
@@ -52,7 +53,6 @@ export function BoardView() {
   const [filter, setFilterState] = useState(loadFilter);
   const [active, setActive] = useState<string | null>(null);
   const [open, setOpen] = useState<Task | null>(null);
-  const [text, setText] = useState('');
 
   const setFilter = (f: typeof filter) => {
     setFilterState(f);
@@ -125,12 +125,6 @@ export function BoardView() {
     if (col !== t.status || order !== t.order) void moveTask(t, col, order);
   };
 
-  const add = async () => {
-    if (!text.trim()) return;
-    const projectId = filter.project !== 'all' && filter.project !== 'none' ? filter.project : null;
-    await newTask({ title: text.trim(), projectId });
-    setText('');
-  };
 
   const activeTask = active ? byId.get(active) : undefined;
 
@@ -153,9 +147,7 @@ export function BoardView() {
           <Az>Alt tapşırıqlar</Az>
         </label>
       </div>
-      <form className="quick" onSubmit={(e) => (e.preventDefault(), add())}>
-        <input type="text" placeholder={tr('+ Yeni tapşırıq…', '+ Новая задача…')} value={text} onChange={(e) => setText(e.target.value)} />
-      </form>
+      <QuickInput defaults={{ projectId: filter.project !== 'all' && filter.project !== 'none' ? filter.project : null }} />
 
       <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setActive(null)}>
         <div className="board">

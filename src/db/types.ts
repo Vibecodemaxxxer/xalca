@@ -18,6 +18,9 @@ export type Metric =
 
 export type TaskStatus = 'todo' | 'doing' | 'done';
 
+/** Размер задачи — от него зависит награда. */
+export type TaskSize = 's' | 'm' | 'l';
+
 export interface Task extends Base {
   title: string;
   description: string;
@@ -30,6 +33,8 @@ export interface Task extends Base {
   /** За сколько минут до time напомнить; null — без напоминания. */
   reminder?: number | null;
   metric: Metric;
+  /** Нет поля — обычная (m). */
+  size?: TaskSize;
   order: number;
   completedAt?: number | null;
 }
@@ -41,6 +46,8 @@ export interface Project extends Base {
   icon: string;
   archived: boolean;
   metric: Metric;
+  /** Проект завершён — даёт бонус: половину наград за его задачи. */
+  completedAt?: number | null;
 }
 
 export type Recurrence =

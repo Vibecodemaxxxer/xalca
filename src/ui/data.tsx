@@ -38,10 +38,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const allPurchases = useLiveQuery(() => db.purchases.toArray(), []);
 
   const xp = useMemo(() => {
-    if (!allTasks || !allRoutines || !allLogs) return null;
-    const byDay = xpByDay(allTasks, allRoutines, allLogs);
+    if (!allTasks || !allRoutines || !allLogs || !allProjects) return null;
+    const byDay = xpByDay(allTasks, allRoutines, allLogs, allProjects);
     return { byDay, total: totalXp(byDay) };
-  }, [allTasks, allRoutines, allLogs]);
+  }, [allTasks, allRoutines, allLogs, allProjects]);
 
   const value = useMemo<Data | null>(() => {
     if (!allTasks || !allRoutines || !allLogs || !allProjects || !allRewards || !allPurchases || !xp) return null;

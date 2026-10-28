@@ -37,7 +37,8 @@ export function Buta({ className = 'buta' }: { className?: string }) {
   );
 }
 
-export function Sheet({ title, onClose, children }: { title: ReactNode; onClose: () => void; children: ReactNode }) {
+/** Шторка снизу; panel — на ПК открывается панелью справа (карточка задачи). */
+export function Sheet({ title, onClose, children, panel }: { title?: ReactNode; onClose: () => void; children: ReactNode; panel?: boolean }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
@@ -49,9 +50,9 @@ export function Sheet({ title, onClose, children }: { title: ReactNode; onClose:
     };
   }, [onClose]);
   return (
-    <div className="sheet-bg" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className={`sheet-bg${panel ? ' panel' : ''}`} onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="sheet" role="dialog">
-        <h2>{title}</h2>
+        {title && <h2>{title}</h2>}
         {children}
       </div>
     </div>

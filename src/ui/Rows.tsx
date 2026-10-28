@@ -4,6 +4,7 @@ import { logRoutine, logRoutineValue, setTaskDone, setTaskProgress } from '../do
 import { Az } from '../i18n/Az';
 import { today, type Day } from '../lib/date';
 import { taskProgress } from '../domain/tree';
+import { taskXp } from '../domain/xp';
 import { Bar, Check, Icon, Stepper } from './common';
 import { useData } from './data';
 import { Semeni } from './Game';
@@ -53,6 +54,7 @@ export function TaskRow({ task: t, onOpen, showDate = true, showProject = true }
         {progress && progress.total > 0 && <Bar cur={progress.done} target={progress.total} />}
       </div>
       {num && <Stepper value={num.current ?? 0} target={num.target} unit={num.unit} onChange={(v) => setTaskProgress(t, v)} />}
+      {!done && !num && <span className={`reward-chip ${t.size ?? 'm'}`}>+{taskXp(t)}</span>}
     </div>
   );
 }

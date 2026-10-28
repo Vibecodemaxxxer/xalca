@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
-import { tr } from '../i18n/lang';
 import type { Routine, RoutineLog, Task } from '../db/types';
-import { newTask } from '../domain/ops';
+
 import { isDue, streak, upcoming } from '../domain/recurrence';
 import { Az } from '../i18n/Az';
 import { addDays, today, type Day } from '../lib/date';
 import { Empty, Icon, Section } from './common';
+import { QuickInput } from './TaskCard';
 import { BoardView } from './Board';
 import { CalendarView } from './Calendar';
 import { useData } from './data';
@@ -53,17 +53,7 @@ function Editor({ editing, close }: { editing: Editing; close: () => void }) {
 }
 
 function QuickAdd({ date }: { date?: Day }) {
-  const [text, setText] = useState('');
-  const add = async () => {
-    if (!text.trim()) return;
-    await newTask({ title: text.trim(), date: date ?? null });
-    setText('');
-  };
-  return (
-    <form className="quick" onSubmit={(e) => (e.preventDefault(), add())}>
-      <input type="text" placeholder={tr('+ Yeni tapşırıq…', '+ Новая задача…')} value={text} onChange={(e) => setText(e.target.value)} />
-    </form>
-  );
+  return <QuickInput defaults={{ date: date ?? null }} />;
 }
 
 // ---------------- Bu gün ----------------

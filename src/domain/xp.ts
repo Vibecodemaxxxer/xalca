@@ -1,12 +1,15 @@
-import type { Routine, RoutineLog, Task } from '../db/types';
+import type { Project, Routine, RoutineLog, Task, TaskSize } from '../db/types';
 import { addDays, diffDays, toDay, type Day } from '../lib/date';
 import { isScheduled } from './recurrence';
 
 // Опыт (XP) не хранится — он вычисляется из истории. Поэтому не может разъехаться между устройствами.
 // Считаем по всем записям, включая удалённые: удаление старой задачи не отнимает заработанное.
 
+export const SIZE_XP: Record<TaskSize, number> = { s: 5, m: 10, l: 25 };
+/** Доля от наград за задачи проекта, которую даёт его завершение. */
+export const PROJECT_BONUS = 0.5;
+
 export const XP = {
-  task: 10,
   numberBonus: 5,
   perCriterion: 2,
   routine: 5,
@@ -15,7 +18,7 @@ export const XP = {
 };
 
 export function taskXp(t: Task): number {
-  let xp = XP.task;
+  let xp = SIZE_XP[t.size ?? 'm'];
   if (t.metric.type === 'number') xp += XP.numberBonus;
   if (t.metric.type === 'criteria') xp += XP.perCriterion * t.metric.items.length;
   return xp;
@@ -43,13 +46,18 @@ export function streaksByDay(r: Routine, doneDays: Day[]): Map<Day, number> {
 }
 
 /** XP по дням. */
-export function xpByDay(tasks: Task[], routines: Routine[], logs: RoutineLog[]): Map<Day, number> {
+export function xpByDay(tasks: Task[], routines: Routine[], logs: RoutineLog[], projects: Project[] = []): Map<Day, number> {
   const out = new Map<Day, number>();
   const add = (d: Day, n: number) => out.set(d, (out.get(d) ?? 0) + n);
 
   for (const t of tasks) {
     if (t.status !== 'done' || !t.completedAt) continue;
     add(toDay(new Date(t.completedAt)), taskXp(t));
+  }
+
+  for (const p of projects) {
+    if (p.deletedAt || !p.completedAt) continue;
+    add(toDay(new Date(p.completedAt)), projectBonus(p.id, tasks));
   }
 
   const byRoutine = new Map<string, Day[]>();
@@ -64,6 +72,12 @@ export function xpByDay(tasks: Task[], routines: Routine[], logs: RoutineLog[]):
     for (const [d, streak] of streaksByDay(r, days)) add(d, XP.routine + Math.min(XP.streakBonusMax, streak - 1));
   }
   return out;
+}
+
+/** Бонус за завершение проекта: половина наград за его выполненные задачи. */
+export function projectBonus(projectId: string, tasks: Task[]): number {
+  const sum = tasks.filter((t) => t.projectId === projectId && t.status === 'done' && t.completedAt).reduce((a, t) => a + taskXp(t), 0);
+  return Math.floor(sum * PROJECT_BONUS);
 }
 
 export const totalXp = (byDay: Map<Day, number>) => [...byDay.values()].reduce((a, b) => a + b, 0);

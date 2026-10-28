@@ -62,3 +62,26 @@ describe('xp', () => {
     expect([1, 3, 7, 14].map((s) => semeniStage(s, true))).toEqual([1, 2, 3, 4]);
   });
 });
+
+describe('размер задач и бонус проекта', () => {
+  it('награда зависит от размера', () => {
+    const m = xpByDay(
+      [task({ completedAt: at('2026-10-01'), size: 's' }), task({ completedAt: at('2026-10-01') }), task({ completedAt: at('2026-10-01'), size: 'l' })],
+      [],
+      [],
+    );
+    expect(m.get('2026-10-01')).toBe(5 + 10 + 25);
+  });
+
+  it('завершённый проект даёт половину наград за свои задачи в день завершения', () => {
+    const tasks = [
+      task({ completedAt: at('2026-10-01'), projectId: 'p', size: 'l' }),
+      task({ completedAt: at('2026-10-02'), projectId: 'p' }),
+      task({ completedAt: at('2026-10-02'), projectId: 'other' }),
+    ];
+    const open = xpByDay(tasks, [], [], [{ ...base, id: 'p', completedAt: null } as any]);
+    expect(open.get('2026-10-05')).toBeUndefined();
+    const done = xpByDay(tasks, [], [], [{ ...base, id: 'p', completedAt: at('2026-10-05') } as any]);
+    expect(done.get('2026-10-05')).toBe(Math.floor((25 + 10) / 2));
+  });
+});
