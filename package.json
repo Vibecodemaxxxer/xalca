@@ -6,7 +6,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
     "test": "vitest run",
-    "android": "node scripts/build.mjs native && cap sync android && cd android && gradlew.bat assembleDebug && copy /Y app\buildoutputsapkdebugapp-debug.apk ..\releaseXalca.apk"
+    "android": "node scripts/build.mjs native && cap sync android && cd android && gradlew.bat assembleDebug && cd .. && node -e \"require('fs').copyFileSync('android/app/build/outputs/apk/debug/app-debug.apk','release/Xalca.apk')\""
   },
   "type": "module",
   "dependencies": {
