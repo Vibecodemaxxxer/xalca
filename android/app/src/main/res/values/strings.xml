@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Xalça</string>
+    <string name="title_activity_main">Xalça</string>
+    <string name="package_name">az.xalca.app</string>
+    <string name="custom_url_scheme">az.xalca.app</string>
+</resources>

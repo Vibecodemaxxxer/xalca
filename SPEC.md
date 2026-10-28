@@ -15,7 +15,7 @@
 | Синхронизация | Через Dropbox, папка приложения `Apps/Xalca`. Своего сервера нет |
 | Хостинг кода | GitHub Pages (только статический код, данных там нет) |
 
-**Стек:** Vite + React + TypeScript, Dexie, rrule, react-markdown (+ remark-gfm), dnd-kit (канбан), Capacitor + @capacitor/local-notifications, vitest.
+**Стек:** Vite + React + TypeScript, Dexie, свой модуль повторов (`src/domain/recurrence.ts`, покрыт тестами), react-markdown (+ remark-gfm), dnd-kit (канбан), Capacitor + @capacitor/local-notifications, vitest.
 
 ### 1.1 Синхронизация
 
@@ -27,7 +27,7 @@
 - Время — гибридные часы (время + счётчик + deviceId), чтобы не зависеть от сбитых часов на устройстве.
 - Синк запускается: при старте, при появлении сети, раз в N минут, после изменений (с задержкой), кнопкой.
 - Картинки грузятся лениво и кешируются локально.
-- Авторизация Dropbox: OAuth PKCE (без секретов), на Android — через deep link.
+- Авторизация Dropbox: OAuth PKCE без redirect — пользователь копирует код со страницы Dropbox (одинаково на ПК и Android, секретов нет). App key вводится в настройках.
 
 ### 1.2 Напоминания
 
@@ -147,3 +147,11 @@ XP за выполненные задачи и рутины. Ранги (чер�
 3. **Виды:** календарь, канбан.
 4. **Геймификация:** XP, ранги, ковёр, səməni, цитаты, çay fasiləsi, каркас ивентов.
 5. **Ивенты** — по мере появления.
+
+---
+
+## 8. Сборка
+
+- `npm run dev` — разработка, `npm test` — тесты, `npm run build` — PWA в `dist/`.
+- `npm run android` — APK (`Xalca.apk` в корне). JDK 21 и Android SDK лежат в `C:\Users\User\dev` (пути в `android/local.properties` и `android/gradle.properties`).
+- Перевод на телефоне: тап по тексту; на кнопках — долгое нажатие (обычный тап нажимает кнопку).

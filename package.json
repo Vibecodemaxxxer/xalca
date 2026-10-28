@@ -5,10 +5,12 @@
     "dev": "vite --host",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
-    "test": "vitest run"
+    "test": "vitest run",
+    "android": "vite build && cap sync android && cd android && gradlew.bat assembleDebug && copy /Y app\buildoutputsapkdebugapp-debug.apk ..Xalca.apk"
   },
   "type": "module",
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
     "@capacitor/app": "^8.1.2",
     "@capacitor/browser": "^8.0.5",
     "@capacitor/core": "^8.5.3",
