@@ -12,7 +12,6 @@ export const PROJECT_BONUS = 0.5;
 
 export const XP = {
   numberBonus: 5,
-  perCriterion: 2,
   routine: 5,
   /** Бонус за стрик: +1 за каждый раз подряд сверх первого, но не больше. */
   streakBonusMax: 5,
@@ -21,7 +20,6 @@ export const XP = {
 export function taskXp(t: Task): number {
   let xp = SIZE_XP[t.size ?? 'm'];
   if (t.metric.type === 'number') xp += XP.numberBonus;
-  if (t.metric.type === 'criteria') xp += XP.perCriterion * t.metric.items.length;
   return xp;
 }
 
