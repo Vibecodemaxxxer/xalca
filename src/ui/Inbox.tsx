@@ -1,7 +1,7 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ClipboardEvent } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ClipboardEvent, type PointerEvent } from 'react';
 import { remove, update } from '../db/db';
 import type { Note, Project, Task } from '../db/types';
-import { isOpen, matches, noteToTask, pieces } from '../domain/notes';
+import { isOpen, matches, noteToTask, pieces, splitNumbered } from '../domain/notes';
 import { keepNote, markNoteMoved, newNote, noteToProject, noteToProjectNotes, noteToTaskOp, notesToTask } from '../domain/ops';
 import { NOTE_XP } from '../domain/notes';
 import { Az } from '../i18n/Az';
@@ -32,7 +32,7 @@ function Feed() {
   const [routineFrom, setRoutineFrom] = useState<Note | null>(null);
   const [projectFor, setProjectFor] = useState<Note | null>(null);
   const [merge, setMerge] = useState<Note[] | null>(null);
-  const bottom = useRef<HTMLDivElement>(null);
+  const feed = useRef<HTMLDivElement>(null);
 
   const shown = notes.filter((n) => matches(n, q));
   const pinned = notes.filter((n) => n.pinned);
@@ -40,7 +40,8 @@ function Feed() {
 
   // при открытии и новых сообщениях — вниз, как в мессенджере
   useLayoutEffect(() => {
-    if (!q) bottom.current?.scrollIntoView({ block: 'end' });
+    const f = feed.current;
+    if (f && !q) f.scrollTop = f.scrollHeight;
   }, [notes.length, q]);
 
   const toggleSel = (n: Note) => {
@@ -64,6 +65,7 @@ function Feed() {
 
   return (
     <div className="inbox">
+      <div className="inbox-top">
       <div className="page-head">
         <div>
           <h1>
@@ -100,6 +102,10 @@ function Feed() {
         </button>
       )}
 
+      </div>
+
+      <div className="feed" ref={feed}>
+        <div className="feed-inner">
       {!notes.length && (
         <div className="empty">
           <Buta />
@@ -111,7 +117,6 @@ function Feed() {
         </div>
       )}
 
-      <div className="feed">
         {groups.map((g) => (
           <div key={g.day}>
             <div className="day-sep">
@@ -141,7 +146,7 @@ function Feed() {
             ))}
           </div>
         ))}
-        <div ref={bottom} />
+        </div>
       </div>
 
       {selected ? (
@@ -288,6 +293,10 @@ function Bubble({
   );
 }
 
+// Кнопки у поля ввода не забирают фокус: иначе на телефоне клавиатура закрывается, меню возвращается,
+// экран сдвигается — и нажатие «Отправить» промахивается.
+const keepFocus = (e: PointerEvent) => e.preventDefault();
+
 function Composer() {
   const [text, setText] = useState('');
   const [imgs, setImgs] = useState<string[]>([]);
@@ -314,9 +323,11 @@ function Composer() {
     }
   };
 
+  // нумерованный план («1. … 2. …») уходит отдельными сообщениями — их удобно раскидать по одному
+  const parts = splitNumbered(text.trim());
   const send = async () => {
     if (!text.trim() && !imgs.length) return;
-    await newNote(text.trim(), imgs);
+    for (const [k, part] of parts.entries()) await newNote(part, k === 0 ? imgs : []);
     setText('');
     setImgs([]);
     ta.current?.focus();
@@ -324,6 +335,11 @@ function Composer() {
 
   return (
     <form className="composer" onSubmit={(e) => (e.preventDefault(), void send())}>
+      {parts.length > 1 && (
+        <div className="composer-split">
+          <Az ru={`Уйдёт ${parts.length} отдельными сообщениями`} full>{`${parts.length} ayrı mesaj kimi gedəcək`}</Az>
+        </div>
+      )}
       {imgs.length > 0 && (
         <div className="composer-imgs">
           {imgs.map((h) => (
@@ -337,7 +353,7 @@ function Composer() {
         </div>
       )}
       <div className="composer-row">
-        <button type="button" className="composer-btn" onClick={() => file.current?.click()} disabled={busy} aria-label="Прикрепить картинку">
+        <button type="button" className="composer-btn" onPointerDown={keepFocus} onClick={() => file.current?.click()} disabled={busy} aria-label="Прикрепить картинку">
           {Icon.clip}
         </button>
         <textarea
@@ -346,6 +362,9 @@ function Composer() {
           value={text}
           placeholder={tr('Fikir, link, şəkil…', 'Мысль, ссылка, картинка…')}
           onChange={(e) => setText(e.target.value)}
+          // пока печатаешь на телефоне — нижнее меню прячется, как в мессенджерах
+          onFocus={() => document.documentElement.classList.add('typing')}
+          onBlur={() => document.documentElement.classList.remove('typing')}
           onPaste={(e: ClipboardEvent) => {
             const fs = [...e.clipboardData.items].filter((i) => i.type.startsWith('image/')).map((i) => i.getAsFile()!).filter(Boolean);
             if (fs.length) (e.preventDefault(), void attach(fs));
@@ -358,7 +377,7 @@ function Composer() {
             }
           }}
         />
-        <button type="submit" className="composer-send" disabled={!text.trim() && !imgs.length} aria-label="Отправить">
+        <button type="submit" className="composer-send" onPointerDown={keepFocus} disabled={!text.trim() && !imgs.length} aria-label="Отправить">
           {Icon.send}
         </button>
       </div>

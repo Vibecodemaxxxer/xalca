@@ -4,7 +4,6 @@ import { Az } from '../i18n/Az';
 import { Coin } from './Bazar';
 import { Buta, Icon } from './common';
 import { Semeni } from './Game';
-import { Armudu } from './Tea';
 
 // Обучение: короткий тур карточками. Показывается при первом запуске и по кнопке в настройках.
 
@@ -136,7 +135,7 @@ const STEPS: Step[] = [
     ru: 'Сословие, ковёр, abbası',
     body: (
       <>
-        За дела — опыт и путь по сословиям: от <b>Rəiyyət</b> до <b>Şah</b>. Каждый день вплетается рядом в <b>ковёр месяца</b>.
+        За дела — опыт и путь по сословиям: от <b>Rəiyyət</b> до <b>Şah</b>. Каждый день вплетается рядом в <b>ковёр месяца</b> — кнопка <b>Xalça</b> на главной.
         <br />
         <br />
         Опыт превращается в монеты <b>abbası</b> — трать их на свои награды в <b>Bazar</b>. Всё это — в профиле, по тапу на значок сословия.
@@ -145,15 +144,13 @@ const STEPS: Step[] = [
   },
   {
     art: (
-      <div className="tour-icon" style={{ background: 'color-mix(in srgb, var(--brand) 12%, var(--surface))', color: 'var(--text)' }}>
-        <Armudu level={0.7} size={70} steam />
-      </div>
+      <Buta className="tour-buta" />
     ),
     az: 'Hazırsan!',
     ru: 'Готово!',
     body: (
       <>
-        Ещё есть <b>çay fasiləsi</b> — помодоро со стаканом армуду (кнопка на «Bu gün»).
+        На главной — шапка с сословием и серией дней, кнопка <b>Xalça</b> (ковёр месяца), пословица дня и лента дней недели.
         <br />
         <br />
         Синхронизация между ПК и телефоном — через Dropbox, в настройках. Там же можно пройти этот тур снова.

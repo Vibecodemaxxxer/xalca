@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Routine, RoutineLog, Task } from '../db/types';
-
+import { itemsByDay } from '../domain/calendar';
 import { isDue, streak, upcoming } from '../domain/recurrence';
 import { Az } from '../i18n/Az';
 import { addDays, today, type Day } from '../lib/date';
@@ -9,12 +9,10 @@ import { QuickInput } from './TaskCard';
 import { BoardView } from './Board';
 import { CalendarView } from './Calendar';
 import { useData } from './data';
-import { QuoteCard } from './Quote';
-import { RankBadge } from './Game';
-import { TeaButton } from './Tea';
+import { DayStrip, TodayHero, TodayQuote } from './TodayHero';
 import { EventBanners } from './Events';
 import { RoutineSheet, TaskSheet } from './Editors';
-import { dayLabel, longDate } from './fmt';
+import { dayLabel } from './fmt';
 import { RoutineRow, TaskRow } from './Rows';
 
 /** Индекс отметок рутин: routineId → день → отметка. */
@@ -63,7 +61,7 @@ export function TodayScreen() {
   const idx = useLogIndex(logs);
   const [editing, setEditing] = useState<Editing>(null);
   const t = today();
-  const head = longDate(t);
+  const [sel, setSel] = useState(t);
 
   const overdue = tasks.filter((x) => x.status !== 'done' && x.date && x.date < t).sort((a, b) => a.date!.localeCompare(b.date!));
   const todays = tasks.filter((x) => x.date === t && x.status !== 'done').sort(byTime);
@@ -82,23 +80,14 @@ export function TodayScreen() {
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>
-            <Az>Bu gün</Az>
-          </h1>
-          <div className="sub">
-            <Az ru={head.ru}>{head.az}</Az>
-          </div>
-        </div>
-        <div className="today-tools">
-          <TeaButton />
-          <span className="today-rank">
-            <RankBadge />
-          </span>
-        </div>
-      </div>
+      <TodayHero />
+      <TodayQuote />
+      <DayStrip sel={sel} onSel={setSel} />
       <EventBanners />
+      {sel !== t ? (
+        <DayAgenda day={sel} onOpen={(x) => setEditing(x)} />
+      ) : (
+        <>
       <QuickAdd date={t} />
 
       {nothing && <Empty az="Bu gün heç nə yoxdur" />}
@@ -137,8 +126,9 @@ export function TodayScreen() {
         </Section>
       )}
 
-      <QuoteCard place="today" />
-      <button className="fab" aria-label="Новая задача" onClick={() => setEditing({ kind: 'task', defaults: { date: t } })}>
+        </>
+      )}
+      <button className="fab" aria-label="Новая задача" onClick={() => setEditing({ kind: 'task', defaults: { date: sel } })}>
         {Icon.plus}
       </button>
       <Editor editing={editing} close={() => setEditing(null)} />
@@ -198,7 +188,6 @@ export function RoutinesScreen() {
           {list(paused)}
         </Section>
       )}
-      <QuoteCard place="routines" />
       <button className="fab" aria-label="Новая привычка" onClick={() => setEditing({ kind: 'routine' })}>
         {Icon.plus}
       </button>
@@ -301,11 +290,44 @@ function TaskList() {
           </div>
         </Section>
       )}
-      <QuoteCard place="tasks" />
       <button className="fab" aria-label="Новая задача" onClick={() => setEditing({ kind: 'task' })}>
         {Icon.plus}
       </button>
       <Editor editing={editing} close={() => setEditing(null)} />
+    </>
+  );
+}
+
+/** Другой день из ленты дней: его задачи и привычки. */
+function DayAgenda({ day, onOpen }: { day: Day; onOpen: (e: Editing) => void }) {
+  const { tasks, routines, logs } = useData();
+  const t = today();
+  const items = itemsByDay([day], t, tasks, routines, logs).get(day)!;
+  const label = dayLabel(day);
+  return (
+    <>
+      <QuickInput key={day} defaults={{ date: day }} />
+      <Section title={label.az}>
+        <div className="list">
+          {items.routines.map(({ routine: r, log }) =>
+            day <= t ? (
+              <RoutineRow key={r.id} routine={r} day={day} log={log} streak={0} onOpen={() => onOpen({ kind: 'routine', routine: r })} />
+            ) : (
+              <div key={r.id} className="row routine planned" onClick={() => onOpen({ kind: 'routine', routine: r })}>
+                <span className="plan-mark" />
+                <div className="body">
+                  <div className="title">{r.title}</div>
+                  {r.time && <div className="meta">{r.time}</div>}
+                </div>
+              </div>
+            ),
+          )}
+          {items.tasks.map((x) => (
+            <TaskRow key={x.id} task={x} showDate={false} onOpen={() => onOpen({ kind: 'task', task: x })} />
+          ))}
+        </div>
+        {!items.routines.length && !items.tasks.length && <p className="hint">Ничего не запланировано</p>}
+      </Section>
     </>
   );
 }

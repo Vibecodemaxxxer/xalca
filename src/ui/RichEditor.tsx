@@ -51,6 +51,9 @@ async function insertImages(editor: Editor, files: File[]) {
   }
 }
 
+// сенсорный экран без мыши — телефон/планшет
+const touch = typeof matchMedia !== 'undefined' && matchMedia('(hover: none)').matches;
+
 export function RichEditor({ value, onChange, placeholder, autoFocus }: { value: string; onChange: (md: string) => void; placeholder?: string; autoFocus?: boolean }) {
   const last = useRef(value);
   const file = useRef<HTMLInputElement>(null);
@@ -101,9 +104,19 @@ export function RichEditor({ value, onChange, placeholder, autoFocus }: { value:
   return (
     <div className="re">
       <Toolbar editor={editor} onImage={() => file.current?.click()} />
-      <BubbleMenu editor={editor} className="re-bubble" shouldShow={({ editor, from, to }) => from !== to && !editor.isActive('image')}>
-        <Marks editor={editor} />
-      </BubbleMenu>
+      {/* Мини-панель при выделении — только на ПК: на телефоне её перекрывает системное меню
+          («Вырезать / Копировать»), а те же кнопки и так всегда видны в панели сверху. */}
+      {!touch && (
+        <BubbleMenu
+          editor={editor}
+          className="re-bubble"
+          appendTo={() => document.body}
+          options={{ placement: 'top', offset: 8, flip: true }}
+          shouldShow={({ editor, from, to }) => from !== to && !editor.isActive('image')}
+        >
+          <Marks editor={editor} />
+        </BubbleMenu>
+      )}
       <EditorContent editor={editor} className="re-content md" />
       <input
         ref={file}

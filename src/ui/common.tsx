@@ -23,6 +23,7 @@ export const Icon = {
   clip: svg(<path d="M20 11.5l-7.8 7.8a5 5 0 0 1-7.1-7.1l8.2-8.2a3.4 3.4 0 0 1 4.8 4.8l-8.2 8.2a1.7 1.7 0 0 1-2.4-2.4l7.5-7.5" />),
   send: svg(<path d="M4 12l16-8-6 16-2.5-6.5z" />, { fill: "currentColor", strokeWidth: 1.5 }),
   inbox: svg(<><path d="M4 13.5V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6.5" /><path d="M4 13.5h4.5l1.5 2.5h4l1.5-2.5H20v4a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" /></>),
+  carpet: svg(<><rect x="5" y="4" width="14" height="16" rx="1.5" /><path d="M12 7.5l3 4.5-3 4.5-3-4.5z" /><path d="M7 2v2M10 2v2M14 2v2M17 2v2M7 20v2M10 20v2M14 20v2M17 20v2" /></>),
   plus: svg(<path d="M12 5v14M5 12h14" />, { strokeWidth: 2.4 }),
   check: svg(<path d="M5 12.5l4.5 4.5L19 7.5" />, { strokeWidth: 3.2 }),
   sync: svg(<><path d="M20 12a8 8 0 0 1-14 5.3M4 12a8 8 0 0 1 14-5.3" /><path d="M18 2.5v4.2h-4.2M6 21.5v-4.2h4.2" /></>),

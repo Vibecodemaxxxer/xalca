@@ -208,7 +208,10 @@ function Card({ task: t, overlay }: { task: Task; overlay?: boolean }) {
   const late = t.status !== 'done' && !!t.date && t.date < today();
   return (
     <div className={`board-card${t.status === 'done' ? ' done' : ''}${overlay ? ' overlay' : ''}`} style={project ? { borderLeftColor: project.color } : undefined}>
-      <div className="title">{t.title}</div>
+      <div className="title">
+        {t.icon ? `${t.icon} ` : ''}
+        {t.title}
+      </div>
       {(project || parent || d || (p && p.total > 0)) && (
         <div className="meta">
           {project && <span>{project.title}</span>}

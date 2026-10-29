@@ -1,27 +1,16 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Project, Task } from '../db/types';
-import { setTaskDone } from '../domain/ops';
-import { projectProgress, taskProgress } from '../domain/tree';
+import { projectProgress } from '../domain/tree';
 import { projectBonus } from '../domain/xp';
 import { Az } from '../i18n/Az';
-import { Bar, Check, Empty, Icon, Section } from './common';
+import { Bar, Empty, Icon, Section } from './common';
 import { QuickInput } from './TaskCard';
+import { TaskTree } from './TaskTree';
 import { useData } from './data';
-import { QuoteCard } from './Quote';
-import { ProjectSheet, QuickSub, TaskSheet } from './Editors';
+import { ProjectSheet, TaskSheet } from './Editors';
 import { RichEditor } from './Markdown';
-import { dayLabel } from './fmt';
 import { update } from '../db/db';
 
-// Свёрнутые ветки дерева запоминаются на устройстве.
-const COLLAPSED = 'xalca.collapsed';
-function loadCollapsed(): Set<string> {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(COLLAPSED) ?? '[]'));
-  } catch {
-    return new Set();
-  }
-}
 
 export function ProjectsScreen({ openId }: { openId?: string }) {
   const { projectById } = useData();
@@ -75,7 +64,6 @@ function ProjectList() {
           <div className="project-grid">{archived.map(card)}</div>
         </Section>
       )}
-      <QuoteCard place="projects" />
       <button className="fab" aria-label="Новый проект" onClick={() => setCreating(true)}>
         {Icon.plus}
       </button>
@@ -88,23 +76,11 @@ function ProjectView({ project: p }: { project: Project }) {
   const { tasks, children } = useData();
   const [editing, setEditing] = useState(false);
   const [open, setOpen] = useState<{ task?: Task; defaults?: Partial<Task> } | null>(null);
-  const [collapsed, setCollapsed] = useState(loadCollapsed);
   const roots = (children.get('') ?? []).filter((t) => t.projectId === p.id);
   const pr = projectProgress(p.id, tasks);
   const allDone = pr.total > 0 && pr.done === pr.total;
   const bonus = projectBonus(p.id, tasks);
 
-  const toggle = (id: string) => {
-    const next = new Set(collapsed);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setCollapsed(next);
-    try {
-      localStorage.setItem(COLLAPSED, JSON.stringify([...next]));
-    } catch {
-      /* приватный режим — просто не запоминаем */
-    }
-  };
 
 
   return (
@@ -161,66 +137,12 @@ function ProjectView({ project: p }: { project: Project }) {
         <QuickInput defaults={{ projectId: p.id }} />
       </div>
 
-      <div className="tree">
-        {roots.map((t) => (
-          <TreeNode key={t.id} task={t} depth={0} collapsed={collapsed} onToggle={toggle} onOpen={(task) => setOpen({ task })} />
-        ))}
-      </div>
+      <TaskTree items={roots} onOpen={(task) => setOpen({ task })} />
       {!roots.length && <Empty az="Tapşırıq yoxdur" ru="Задач нет — добавь первую строкой выше" />}
 
       {editing && <ProjectSheet project={p} onClose={() => setEditing(false)} />}
       {open && <TaskSheet task={open.task} defaults={open.defaults} onClose={() => setOpen(null)} />}
     </>
-  );
-}
-
-function TreeNode({ task: t, depth, collapsed, onToggle, onOpen }: { task: Task; depth: number; collapsed: Set<string>; onToggle: (id: string) => void; onOpen: (t: Task) => void }) {
-  const { children } = useData();
-  const [adding, setAdding] = useState(false);
-  const kids = children.get(t.id) ?? [];
-  const isCollapsed = collapsed.has(t.id);
-  const done = t.status === 'done';
-  const p = taskProgress(t, children);
-  const d = t.date ? dayLabel(t.date) : null;
-
-  return (
-    <div className="node" style={{ '--depth': depth } as CSSProperties}>
-      <div className={`row tree-row${done ? ' done' : ''}`}>
-        <button className={`twist${kids.length ? '' : ' none'}${isCollapsed ? '' : ' open'}`} onClick={() => kids.length && onToggle(t.id)} aria-label={isCollapsed ? 'Развернуть' : 'Свернуть'}>
-          {Icon.chevron}
-        </button>
-        <Check on={done} onToggle={() => setTaskDone(t, !done)} />
-        <div className="body" onClick={() => onOpen(t)}>
-          <div className="title">{t.title}</div>
-          {(p?.total || d || t.description.trim()) && (
-            <div className="meta">
-              {p && p.total > 0 && (
-                <span>
-                  {p.done}/{p.total}
-                  {p.total > 0 && t.metric.type === 'number' && t.metric.unit ? ` ${t.metric.unit}` : ''}
-                </span>
-              )}
-              {d && (
-                <span>
-                  <Az ru={d.ru}>{d.az}</Az>
-                </span>
-              )}
-              {t.description.trim() && <span className="chip ico">{t.images.length ? Icon.image : Icon.note}</span>}
-            </div>
-          )}
-          {p && p.total > 0 && <Bar cur={p.done} target={p.total} />}
-        </div>
-        <button className="add-sub" onClick={() => setAdding(true)} aria-label="Добавить подзадачу">
-          +
-        </button>
-      </div>
-      {adding && (
-        <div className="node" style={{ '--depth': depth + 1 } as CSSProperties}>
-          <QuickSub parent={t} autoFocus onDone={() => setAdding(false)} />
-        </div>
-      )}
-      {!isCollapsed && kids.map((k) => <TreeNode key={k.id} task={k} depth={depth + 1} collapsed={collapsed} onToggle={onToggle} onOpen={onOpen} />)}
-    </div>
   );
 }
 

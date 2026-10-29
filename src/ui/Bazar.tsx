@@ -6,7 +6,6 @@ import { buyReward, newReward } from '../domain/ops';
 import { Az } from '../i18n/Az';
 import { Field, Icon, Sheet } from './common';
 import { useData } from './data';
-import { QuoteCard } from './Quote';
 
 /** Монета abbası (серебро Сефевидов). */
 export function Coin({ size = 16 }: { size?: number }) {
@@ -134,7 +133,6 @@ export function BazarScreen() {
         </section>
       )}
 
-      <QuoteCard place="profile" salt={7} />
 
       {buying && (
         <Sheet title={<Az ru="Купить?">Alırsan?</Az>} onClose={() => setBuying(null)}>

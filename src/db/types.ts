@@ -35,6 +35,8 @@ export interface Task extends Base {
   metric: Metric;
   /** Нет поля — обычная (m). */
   size?: TaskSize;
+  /** Эмодзи перед названием, как в Notion. */
+  icon?: string | null;
   order: number;
   completedAt?: number | null;
 }

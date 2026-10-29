@@ -179,7 +179,7 @@ function DayCell(p: {
   const shown = p.mode === 'month' ? routines.filter((r) => !everyDay(r.routine.recurrence)) : routines;
   // Сначала задачи: при нехватке места важнее они.
   const chips = [
-    ...tasks.map((t) => ({ key: t.id, title: t.title, done: t.status === 'done', routine: false as const, task: t, color: p.projectColor(t) })),
+    ...tasks.map((t) => ({ key: t.id, title: t.icon ? `${t.icon} ${t.title}` : t.title, done: t.status === 'done', routine: false as const, task: t, color: p.projectColor(t) })),
     ...shown.map((r) => ({ key: r.routine.id, title: r.routine.title, done: r.done, routine: true as const, task: undefined, color: undefined })),
   ];
   const cls = ['cal-cell', p.outside && 'outside', p.isToday && 'today', p.selected && 'sel', p.dragOver && 'drop'].filter(Boolean).join(' ');

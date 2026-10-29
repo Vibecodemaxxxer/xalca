@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { knotLevel, rankFor, RANKS, semeniStage, streaksByDay, totalXp, xpByDay } from './xp';
+import { dayStreak, knotLevel, rankFor, RANKS, semeniStage, streaksByDay, totalXp, xpByDay } from './xp';
 
 const base = { createdAt: 0, updatedAt: 0, deletedAt: null, _ts: {} };
 const at = (day: string) => new Date(`${day}T12:00:00`).getTime();
@@ -84,4 +84,11 @@ describe('размер задач и бонус проекта', () => {
     const done = xpByDay(tasks, [], [], [{ ...base, id: 'p', completedAt: at('2026-10-05') } as any]);
     expect(done.get('2026-10-05')).toBe(Math.floor((25 + 10) / 2));
   });
+});
+
+it('серия дней подряд', () => {
+  const m = new Map([['2026-10-26', 5], ['2026-10-27', 10], ['2026-10-28', 3]]);
+  expect(dayStreak(m, '2026-10-28')).toBe(3);
+  expect(dayStreak(m, '2026-10-29')).toBe(3); // сегодня ещё пусто — серия не оборвана
+  expect(dayStreak(m, '2026-10-30')).toBe(0);
 });

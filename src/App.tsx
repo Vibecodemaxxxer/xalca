@@ -86,7 +86,7 @@ export function App() {
       </nav>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="border-strip" />
-        <main className="main" key={lang}>
+        <main className={`main${tab === 'inbox' && arg !== 'razbor' ? ' chat' : ''}`} key={lang}>
           <UpdateBanner />
           <GameWatcher />
           <EventsWatcher />

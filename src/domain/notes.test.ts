@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isOpen, matches, noteToTask, pieces, tagsOf } from './notes';
+import { isOpen, matches, noteToTask, pieces, splitNumbered, tagsOf } from './notes';
 
 const note = (f: Record<string, unknown>) => ({ id: 'n', createdAt: 0, updatedAt: 0, deletedAt: null, _ts: {}, text: '', images: [], pinned: false, ...f }) as any;
 
@@ -33,4 +33,21 @@ describe('избранное', () => {
     expect(matches(note({ text: 'Идея для #ремонт кухни' }), 'кухни #ремонт')).toBe(true);
     expect(matches(note({ text: 'Идея' }), 'кухни')).toBe(false);
   });
+});
+
+describe('план списком', () => {
+  it('нумерованный список → отдельные сообщения без номеров', () => {
+    expect(splitNumbered('1. Зарядка\n2. Позвонить маме\n3) Купить хлеб')).toEqual(['Зарядка', 'Позвонить маме', 'Купить хлеб']);
+  });
+  it('заголовок до списка и продолжение пункта', () => {
+    expect(splitNumbered('План на день:\n1. Отчёт\nдо обеда\n2. Спортзал')).toEqual(['План на день:', 'Отчёт\nдо обеда', 'Спортзал']);
+  });
+  it('один пункт или обычный текст — не трогаем', () => {
+    expect(splitNumbered('1. Только это')).toEqual(['1. Только это']);
+    expect(splitNumbered('Купить 2 кг\nи ещё 3 штуки')).toEqual(['Купить 2 кг\nи ещё 3 штуки']);
+  });
+});
+
+it('номер пункта не попадает в название задачи', () => {
+  expect(noteToTask({ text: '3. Купить хлеб', images: [] } as any).title).toBe('Купить хлеб');
 });

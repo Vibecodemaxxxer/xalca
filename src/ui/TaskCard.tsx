@@ -1,113 +1,49 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Metric, Task, TaskSize } from '../db/types';
 import { deleteTask, moveToProject, newTask, saveTask, setTaskDone } from '../domain/ops';
-import { parseQuick } from '../domain/parse';
-import { ancestors, descendants, taskProgress } from '../domain/tree';
+import { ancestors, descendants } from '../domain/tree';
 import { SIZE_XP } from '../domain/xp';
 import { Az } from '../i18n/Az';
 import { tr } from '../i18n/lang';
 import { addDays, today, weekday, type Day } from '../lib/date';
-import { Bar, Check, Icon, Sheet } from './common';
+import { Check, Icon, Sheet } from './common';
 import { useData } from './data';
+import { EmojiPicker } from './emoji';
 import { dayLabel } from './fmt';
 import { MdEditor } from './Markdown';
 import { MetricPicker } from './pickers';
-
-/**
- * Открыть задачу: существующую — карточкой, новую — окном быстрого ввода.
- * Имя и параметры прежние, чтобы все экраны работали без изменений.
- */
-export function TaskSheet({ task, defaults, onClose }: { task?: Task; defaults?: Partial<Task>; onClose: () => void }) {
-  const [current, setCurrent] = useState<Task | undefined>(task);
-  if (!current) return <QuickAddSheet defaults={defaults} onClose={onClose} />;
-  // key — чтобы при переходе к подзадаче/родителю состояние карточки начиналось заново
-  return <TaskCard key={current.id} task={current} onClose={onClose} onOpen={setCurrent} />;
-}
-
-// ---------------- быстрый ввод ----------------
+import { TaskTree } from './TaskTree';
 
 type Defaults = Partial<Pick<Task, 'date' | 'projectId' | 'parentId'>>;
 
-/** Строка быстрого ввода: «Купить хлеб завтра 18:00 #проект !» — дата, время, проект и размер распознаются сами. */
+/**
+ * Окно задачи. Существующая открывается сразу; новая — тем же окном-черновиком:
+ * задача появляется, как только у неё есть название.
+ */
+export function TaskSheet({ task, defaults, onClose }: { task?: Task; defaults?: Partial<Task>; onClose: () => void }) {
+  const [current, setCurrent] = useState<Task | undefined>(task);
+  // key — чтобы при переходе к подзадаче/родителю состояние окна начиналось заново
+  return <TaskCard key={current?.id ?? 'new'} task={current} defaults={defaults} onClose={onClose} onOpen={setCurrent} />;
+}
+
+/** Простое поле над списком: что написал — то и название задачи. */
 export function QuickInput({ defaults, autoFocus, placeholder, onAdded }: { defaults?: Defaults; autoFocus?: boolean; placeholder?: string; onAdded?: (t: Task) => void }) {
-  const { projects, projectById } = useData();
   const [text, setText] = useState('');
-  const t = today();
-  const p = text.trim() ? parseQuick(text, t, projects) : null;
-
   const add = async () => {
-    if (!p?.title) return;
-    const task = await newTask({
-      title: p.title,
-      date: p.date ?? defaults?.date ?? null,
-      time: p.time ?? null,
-      // время указано — сразу напоминание в это время
-      reminder: p.time ? 0 : null,
-      projectId: p.projectId ?? defaults?.projectId ?? null,
-      parentId: defaults?.parentId ?? null,
-      ...(p.size ? { size: p.size } : {}),
-    });
+    const title = text.trim();
+    if (!title) return;
     setText('');
-    onAdded?.(task);
+    const t = await newTask({ title, date: defaults?.date ?? null, projectId: defaults?.projectId ?? null, parentId: defaults?.parentId ?? null });
+    onAdded?.(t);
   };
-
   return (
     <form className="quick" onSubmit={(e) => (e.preventDefault(), void add())}>
-      <input
-        type="text"
-        enterKeyHint="done"
-        autoFocus={autoFocus}
-        placeholder={placeholder ?? tr('Yeni tapşırıq…', 'Новая задача…')}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      {p && p.found.length > 0 && (
-        <div className="parsed">
-          {p.found.map((f, i) => (
-            <span key={i} className={f.kind}>
-              {f.kind === 'date' && p.date ? dayLabel(p.date).ru : f.kind === 'project' && p.projectId ? projectById.get(p.projectId)?.title : f.kind === 'size' ? 'большая +25' : f.text}
-            </span>
-          ))}
-        </div>
-      )}
+      <input type="text" enterKeyHint="done" autoFocus={autoFocus} placeholder={placeholder ?? tr('Yeni tapşırıq…', 'Новая задача…')} value={text} onChange={(e) => setText(e.target.value)} />
     </form>
   );
 }
 
-function QuickAddSheet({ defaults, onClose }: { defaults?: Defaults; onClose: () => void }) {
-  const [added, setAdded] = useState<Task[]>([]);
-  return (
-    <Sheet title={<Az>Yeni tapşırıq</Az>} onClose={onClose}>
-      <QuickInput defaults={defaults} autoFocus onAdded={(t) => setAdded((a) => [...a, t])} />
-      <p className="hint" style={{ margin: '4px 2px 0' }}>
-        Например: <b>Позвонить врачу завтра 10:00</b>, <b>Отчёт в пятницу !</b>, <b>Плитка #ремонт</b>
-        <br />
-        <b>!</b> — большая задача, <b>#</b> — проект. Enter — добавить и сразу писать следующую.
-      </p>
-      {added.length > 0 && (
-        <div className="list" style={{ marginTop: 8 }}>
-          {added.map((t) => (
-            <div key={t.id} className="row">
-              <span className="ico" style={{ color: 'var(--green)' }}>
-                {Icon.check}
-              </span>
-              <div className="body">
-                <div className="title">{t.title}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      <div className="actions">
-        <button className="btn" onClick={onClose}>
-          <Az>Hazır</Az>
-        </button>
-      </div>
-    </Sheet>
-  );
-}
-
-// ---------------- карточка задачи ----------------
+// ---------------- окно задачи ----------------
 
 type Prop = 'date' | 'project' | 'size' | 'metric' | null;
 
@@ -124,31 +60,88 @@ const METRIC_LABEL: Record<Metric['type'], { az: string; ru: string }> = {
   subtasks: { az: 'Alt tapşırıqlar', ru: 'По подзадачам' },
 };
 
-function TaskCard({ task, onClose, onOpen }: { task: Task; onClose: () => void; onOpen: (t: Task) => void }) {
+const BLANK = (d?: Partial<Task>): Task => ({
+  id: '',
+  createdAt: 0,
+  updatedAt: 0,
+  _ts: {},
+  title: '',
+  description: '',
+  images: [],
+  status: 'todo',
+  metric: { type: 'check' },
+  order: 0,
+  date: d?.date ?? null,
+  time: null,
+  reminder: null,
+  projectId: d?.projectId ?? null,
+  parentId: d?.parentId ?? null,
+  completedAt: null,
+  icon: null,
+});
+
+function TaskCard({ task, defaults, onClose, onOpen }: { task?: Task; defaults?: Partial<Task>; onClose: () => void; onOpen: (t: Task) => void }) {
   const { byId, children, projects, projectById } = useData();
-  const live = byId.get(task.id) ?? task;
-  const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description);
+  // id появляется, когда черновик стал задачей
+  const [id, setId] = useState<string | null>(task?.id ?? null);
+  const [draft, setDraft] = useState<Task>(() => task ?? BLANK(defaults));
+  const live = (id && byId.get(id)) || draft;
+  const [title, setTitle] = useState(task?.title ?? '');
+  const [description, setDescription] = useState(task?.description ?? '');
   const [open, setOpen] = useState<Prop>(null);
   const [menu, setMenu] = useState(false);
+  const [emoji, setEmoji] = useState(false);
   const titleRef = useRef<HTMLTextAreaElement>(null);
+  const creating = useRef<Promise<Task | null> | null>(null);
+  const idRef = useRef(id);
+  idRef.current = id;
+
+  /** Создать задачу из черновика (один раз), если есть название. */
+  const ensure = (): Promise<Task | null> => {
+    if (idRef.current) return Promise.resolve(byId.get(idRef.current) ?? null);
+    if (!titleNow.current.trim()) return Promise.resolve(null);
+    creating.current ??= (async () => {
+      const d = draftRef.current;
+      const t = await newTask({
+        title: titleNow.current.trim(),
+        description: descNow.current,
+        date: d.date,
+        time: d.time,
+        reminder: d.reminder,
+        projectId: d.projectId,
+        parentId: d.parentId,
+        size: d.size,
+        metric: d.metric,
+        icon: d.icon,
+      });
+      idRef.current = t.id;
+      setId(t.id);
+      return t;
+    })();
+    return creating.current;
+  };
+
+  // актуальные значения для отложенных сохранений
+  const titleNow = useRef(title);
+  const descNow = useRef(description);
+  const draftRef = useRef(draft);
+  titleNow.current = title;
+  descNow.current = description;
+  draftRef.current = draft;
 
   // Название и описание сохраняются сами — с небольшой задержкой и при закрытии.
-  const pending = useRef<{ title: string; description: string } | null>(null);
   const flush = () => {
-    const p = pending.current;
-    pending.current = null;
-    if (p && p.title.trim()) void saveTask(task.id, { title: p.title.trim(), description: p.description });
+    if (!titleNow.current.trim()) return;
+    if (idRef.current) void saveTask(idRef.current, { title: titleNow.current.trim(), description: descNow.current });
+    else void ensure();
   };
   useEffect(() => {
-    if (title === live.title && description === live.description) return;
-    pending.current = { title, description };
+    if (id && title === live.title && description === live.description) return;
     const t = setTimeout(flush, 500);
     return () => clearTimeout(t);
   }, [title, description]);
   useEffect(() => () => flush(), []);
 
-  // высота поля названия — по тексту
   useEffect(() => {
     const el = titleRef.current;
     if (el) {
@@ -157,14 +150,22 @@ function TaskCard({ task, onClose, onOpen }: { task: Task; onClose: () => void; 
     }
   }, [title]);
 
-  const set = (fields: Partial<Task>) => saveTask(task.id, fields);
+  /** Поменять свойства: у задачи — сразу в базу, у черновика — пока в черновик. */
+  const set = async (fields: Partial<Task>) => {
+    if (idRef.current) await saveTask(idRef.current, fields);
+    else setDraft((d) => ({ ...d, ...fields }));
+  };
+  const setProject = async (projectId: string | null) => {
+    if (idRef.current) await moveToProject(live, projectId);
+    else setDraft((d) => ({ ...d, projectId }));
+  };
   const go = (t: Task) => {
     flush();
     onOpen(t);
   };
 
-  const chain = ancestors(live, byId);
-  const subs = children.get(live.id) ?? [];
+  const chain = id ? ancestors(live, byId) : live.parentId && byId.get(live.parentId) ? [...ancestors(byId.get(live.parentId)!, byId), byId.get(live.parentId)!] : [];
+  const subs = id ? (children.get(id) ?? []) : [];
   const done = live.status === 'done';
   const size = live.size ?? 'm';
   const project = live.projectId ? projectById.get(live.projectId) : undefined;
@@ -177,6 +178,7 @@ function TaskCard({ task, onClose, onOpen }: { task: Task; onClose: () => void; 
         <div className="crumbs">
           {chain.map((p) => (
             <button key={p.id} className="crumb" onClick={() => go(p)}>
+              {p.icon ? `${p.icon} ` : ''}
               {p.title}
             </button>
           ))}
@@ -184,26 +186,34 @@ function TaskCard({ task, onClose, onOpen }: { task: Task; onClose: () => void; 
       )}
 
       <div className="tc-head">
-        <Check on={done} onToggle={() => void setTaskDone(live, !done)} />
+        <Check on={done} onToggle={() => id && void setTaskDone(live, !done)} />
+        <button className={`tc-emoji${live.icon ? ' set' : ''}`} onClick={() => setEmoji(true)} aria-label="Эмодзи">
+          {live.icon || '☺'}
+        </button>
         <textarea
           ref={titleRef}
           className="tc-title"
           rows={1}
+          autoFocus={!task}
+          placeholder={tr('Tapşırığın adı', 'Название задачи')}
           value={title}
           onChange={(e) => setTitle(e.target.value.replace(/\n/g, ' '))}
+          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), flush())}
           aria-label="Название"
         />
-        <button className="btn ghost tc-more" onClick={() => setMenu(!menu)} aria-label="Ещё">
-          ⋯
-        </button>
+        {id && (
+          <button className="btn ghost tc-more" onClick={() => setMenu(!menu)} aria-label="Ещё">
+            ⋯
+          </button>
+        )}
       </div>
 
-      {menu && (
+      {menu && id && (
         <div className="tc-menu">
           <button
             className="danger"
             onClick={() => {
-              const n = descendants(live.id, children).length;
+              const n = descendants(id, children).length;
               if (confirm(n ? `Удалить задачу и подзадачи (${n})?` : 'Удалить задачу?')) void deleteTask(live).then(onClose);
             }}
           >
@@ -228,7 +238,7 @@ function TaskCard({ task, onClose, onOpen }: { task: Task; onClose: () => void; 
             {project ? project.title : <Az>Layihə</Az>}
           </PropChip>
         )}
-        <PropChip icon={<span className="abbasi-dot">★</span>} on={open === 'size'} set={size !== 'm'} big={size === 'l'} onClick={() => toggle('size')}>
+        <PropChip icon={<span>★</span>} on={open === 'size'} set={size !== 'm'} big={size === 'l'} onClick={() => toggle('size')}>
           <Az ru={`${SIZES.find((s) => s.v === size)!.ru} +${SIZE_XP[size]}`} full>{`${SIZES.find((s) => s.v === size)!.az} +${SIZE_XP[size]}`}</Az>
         </PropChip>
         <PropChip icon={Icon.check} on={open === 'metric'} set={live.metric.type !== 'check'} onClick={() => toggle('metric')}>
@@ -242,13 +252,13 @@ function TaskCard({ task, onClose, onOpen }: { task: Task; onClose: () => void; 
       {open === 'project' && (
         <div className="prop-panel">
           <div className="prop-list">
-            <button className={!live.projectId ? 'on' : ''} onClick={() => void moveToProject(live, null).then(() => setOpen(null))}>
+            <button className={!live.projectId ? 'on' : ''} onClick={() => void setProject(null).then(() => setOpen(null))}>
               <Az>Layihəsiz</Az>
             </button>
             {projects
               .filter((p) => !p.archived && !p.completedAt)
               .map((p) => (
-                <button key={p.id} className={live.projectId === p.id ? 'on' : ''} onClick={() => void moveToProject(live, p.id).then(() => setOpen(null))}>
+                <button key={p.id} className={live.projectId === p.id ? 'on' : ''} onClick={() => void setProject(p.id).then(() => setOpen(null))}>
                   <i className="pdot" style={{ background: p.color }} />
                   {p.title}
                 </button>
@@ -279,21 +289,45 @@ function TaskCard({ task, onClose, onOpen }: { task: Task; onClose: () => void; 
       )}
 
       <div className="tc-section">
-        <MdEditor value={description} onChange={setDescription} startInPreview />
+        <MdEditor value={description} onChange={setDescription} />
       </div>
 
       <div className="tc-section">
         <h3>
           <Az>Alt tapşırıqlar</Az> {subs.length > 0 && `· ${subs.filter((s) => s.status === 'done').length}/${subs.length}`}
         </h3>
-        <div className="list subs">
-          {subs.map((s) => (
-            <SubRow key={s.id} task={s} onOpen={() => go(s)} />
-          ))}
-        </div>
-        <SubAdd parent={live} />
+        {subs.length > 0 && <TaskTree items={subs} onOpen={go} />}
+        {id ? <SubAdd parent={live} /> : <SubAddDraft ensure={ensure} />}
       </div>
+
+      {emoji && <EmojiPicker value={live.icon} onPick={(e) => void set({ icon: e })} onClose={() => setEmoji(false)} />}
     </Sheet>
+  );
+}
+
+/** Подзадача у ещё не созданной задачи: сначала создаём задачу (нужно название). */
+function SubAddDraft({ ensure }: { ensure: () => Promise<Task | null> }) {
+  const [text, setText] = useState('');
+  const [warn, setWarn] = useState(false);
+  const add = async () => {
+    const title = text.trim();
+    if (!title) return;
+    const parent = await ensure();
+    if (!parent) return setWarn(true);
+    setText('');
+    setWarn(false);
+    await newTask({ title, parentId: parent.id });
+  };
+  return (
+    <>
+      <form className="sub-add" onSubmit={(e) => (e.preventDefault(), void add())}>
+        <input type="text" enterKeyHint="enter" placeholder={tr('Alt tapşırıq…', 'Подзадача…')} value={text} onChange={(e) => setText(e.target.value)} />
+        <button type="submit" className="btn small" disabled={!text.trim()} aria-label="Добавить подзадачу">
+          +
+        </button>
+      </form>
+      {warn && <p className="hint">Сначала напиши название задачи.</p>}
+    </>
   );
 }
 
@@ -367,26 +401,6 @@ function DatePanel({ task, onChange }: { task: Task; onChange: (f: Partial<Task>
             ))}
           </div>
         </div>
-      )}
-    </div>
-  );
-}
-
-function SubRow({ task: t, onOpen }: { task: Task; onOpen: () => void }) {
-  const { children } = useData();
-  const done = t.status === 'done';
-  const p = taskProgress(t, children);
-  return (
-    <div className={`row${done ? ' done' : ''}`}>
-      <Check on={done} onToggle={() => void setTaskDone(t, !done)} />
-      <div className="body" onClick={onOpen}>
-        <div className="title">{t.title}</div>
-        {p && p.total > 0 && <Bar cur={p.done} target={p.total} />}
-      </div>
-      {p && p.total > 0 && (
-        <span className="hint">
-          {p.done}/{p.total}
-        </span>
       )}
     </div>
   );

@@ -5,10 +5,9 @@ import { Az } from '../i18n/Az';
 import { addDays, daysInMonth, parseDay, toDay, today, type Day } from '../lib/date';
 import { Bar, Buta, Icon, Sheet } from './common';
 import { useData } from './data';
-import { QuoteCard } from './Quote';
 import { AbbasiAmount } from './Bazar';
 import { EventBadges } from './Events';
-import { AZ_MONTHS, dayLabel, RU_MONTHS_NOM } from './fmt';
+import { dayLabel } from './fmt';
 
 // ---------------- значок сословия ----------------
 
@@ -143,19 +142,6 @@ export function Carpet({ month, onPick, picked }: { month: Day; onPick?: (d: Day
 export function ProfileScreen() {
   const { xp, abbasi } = useData();
   const r = rankFor(xp.total);
-  const [month, setMonth] = useState(() => today().slice(0, 8) + '01');
-  const [picked, setPicked] = useState<Day | undefined>();
-  const m = parseDay(month);
-  const monthXp = [...xp.byDay].filter(([d]) => d.startsWith(month.slice(0, 7))).reduce((a, [, v]) => a + v, 0);
-  const firstMonth = [...xp.byDay.keys()].sort()[0]?.slice(0, 8) + '01';
-  const canBack = !!firstMonth && month > firstMonth;
-  const canFwd = month < today().slice(0, 8) + '01';
-  const shiftMonth = (k: number) => {
-    const d = new Date(m.getFullYear(), m.getMonth() + k, 1);
-    setMonth(toDay(d));
-    setPicked(undefined);
-  };
-
   const week = Array.from({ length: 7 }, (_, i) => addDays(today(), i - 6));
   const weekXp = week.reduce((a, d) => a + (xp.byDay.get(d) ?? 0), 0);
   const activeDays = [...xp.byDay.values()].filter((v) => v > 0).length;
@@ -223,29 +209,6 @@ export function ProfileScreen() {
 
       <section className="section">
         <h2>
-          <Az ru="Ковёр месяца">Ayın xalçası</Az>
-        </h2>
-        <div className="carpet-wrap">
-          <div className="cal-nav">
-            <button className="btn ghost" disabled={!canBack} onClick={() => shiftMonth(-1)} aria-label="Предыдущий месяц">
-              <span className="ico">{Icon.back}</span>
-            </button>
-            <span className="cal-title">
-              <Az ru={`${RU_MONTHS_NOM[m.getMonth()]} ${m.getFullYear()}`}>{`${AZ_MONTHS[m.getMonth()][0].toUpperCase()}${AZ_MONTHS[m.getMonth()].slice(1)} ${m.getFullYear()}`}</Az>
-            </span>
-            <button className="btn ghost" disabled={!canFwd} onClick={() => shiftMonth(1)} aria-label="Следующий месяц">
-              <span className="ico">{Icon.chevron}</span>
-            </button>
-          </div>
-          <Carpet month={month} picked={picked} onPick={(d) => setPicked(d === picked ? undefined : d)} />
-          <p className="hint" style={{ textAlign: 'center' }}>
-            {picked ? `${dayLabel(picked).ru}: ${xp.byDay.get(picked) ?? 0} XP` : `${monthXp} XP за месяц · каждый ряд — день, пропуск — пустые нити`}
-          </p>
-        </div>
-      </section>
-
-      <section className="section">
-        <h2>
           <Az ru="Путь по сословиям">Yol</Az>
         </h2>
         <ol className="ranks">
@@ -262,7 +225,6 @@ export function ProfileScreen() {
         </ol>
       </section>
       <EventBadges />
-      <QuoteCard place="profile" />
 
     </>
   );
@@ -320,7 +282,6 @@ export function GameWatcher() {
               <Az ru={RANKS[rankUp].ru}>{RANKS[rankUp].az}</Az>
             </div>
             <p>{RANKS[rankUp].about}</p>
-            <QuoteCard place="rankup" salt={rankUp} />
             <button
               className="btn primary"
               onClick={() => {

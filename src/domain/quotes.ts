@@ -21,8 +21,22 @@ const VURGUN = { az: 'Səməd Vurğun', ru: 'Самед Вургун' };
 const HACIBEYOV = { az: 'Üzeyir Hacıbəyov', ru: 'Узеир Гаджибеков' };
 
 const WQ = 'az.wikiquote.org';
+const PROVERB = { az: 'Atalar sözü', ru: 'Пословица' };
+const FOLK = 'народная пословица';
 
 export const QUOTES: Quote[] = [
+  // народные пословицы — на главной вперемешку с цитатами
+  { az: 'Tələsən təndirə düşər.', ru: 'Кто спешит — тот в тандыр упадёт.', author: PROVERB, source: FOLK, places: ['today'] },
+  { az: 'Damla-damla göl olar.', ru: 'Капля за каплей — и озеро.', author: PROVERB, source: FOLK, places: ['today'] },
+  { az: 'Yüz ölç, bir biç.', ru: 'Сто раз отмерь, один раз отрежь.', author: PROVERB, source: FOLK, places: ['today'] },
+  { az: 'Bu günün işini sabaha qoyma.', ru: 'Не откладывай сегодняшнее дело на завтра.', author: PROVERB, source: FOLK, places: ['today'] },
+  { az: 'Dost dar gündə tanınar.', ru: 'Друг познаётся в трудный день.', author: PROVERB, source: FOLK, places: ['today'] },
+  { az: 'Əl əli yuyar, əl də üzü.', ru: 'Рука руку моет, а обе — лицо.', author: PROVERB, source: FOLK, places: ['today'] },
+  { az: 'Su axar, çuxurunu tapar.', ru: 'Вода течёт — и свою ложбину найдёт.', author: PROVERB, source: FOLK, places: ['today'] },
+  { az: 'Səbr acıdır, meyvəsi şirin.', ru: 'Терпение горько, да плод его сладок.', author: PROVERB, source: FOLK, places: ['today'] },
+  { az: 'Ağıllı düşmən ağılsız dostdan yaxşıdır.', ru: 'Умный враг лучше глупого друга.', author: PROVERB, source: FOLK, places: ['today'] },
+  { az: 'İşləməyən dişləməz.', ru: 'Кто не работает, тот не ест.', author: PROVERB, source: FOLK, places: ['today'] },
+
   {
     az: 'Gecəni, gündüzü çox vermə bada,\nYaxşı ad uğrunda çalış dünyada.',
     ru: 'Не пускай на ветер ни ночей, ни дней —\nтрудись в этом мире ради доброго имени.',

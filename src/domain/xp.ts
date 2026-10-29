@@ -140,3 +140,17 @@ export function semeniStage(streak: number, everDone: boolean): -1 | 0 | 1 | 2 |
   if (streak < 14) return 3;
   return 4;
 }
+
+/**
+ * Сколько дней подряд был хоть какой-то опыт. Сегодняшний пустой день серию не обрывает —
+ * он ещё не закончился.
+ */
+export function dayStreak(byDay: Map<Day, number>, today: Day): number {
+  let d = (byDay.get(today) ?? 0) > 0 ? today : addDays(today, -1);
+  let n = 0;
+  while ((byDay.get(d) ?? 0) > 0 && n < 10000) {
+    n++;
+    d = addDays(d, -1);
+  }
+  return n;
+}

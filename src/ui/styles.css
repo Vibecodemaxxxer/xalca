@@ -730,3 +730,118 @@ html[data-lang='mixed'] :is(button, a, label, select, [role=button]) .ru-t { dis
 .tour-nav { display: flex; gap: 10px; max-width: 560px; width: 100%; margin: 0 auto; }
 .tour-next { flex: 1; min-height: 54px; font-size: 17px; }
 .tour-nav .btn:not(.tour-next) { min-height: 54px; width: 60px; }
+
+/* ---------- избранное: полноэкранный чат, как в Telegram ---------- */
+.main.chat {
+  max-width: none; padding: 0; display: flex; flex-direction: column;
+  height: calc(100dvh - 6px - 70px - env(safe-area-inset-bottom));
+}
+@media (min-width: 900px) { .main.chat { height: calc(100dvh - 6px); } }
+@media (max-width: 899px) {
+  html.typing .nav { display: none; }
+  html.typing .main.chat { height: calc(100dvh - 6px); }
+}
+.main.chat > .update-banner { margin: 8px 16px 0; }
+.main.chat .inbox { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.main.chat .inbox-top { flex: none; padding: 0 16px; }
+@media (min-width: 900px) { .main.chat .inbox-top { padding: 0 32px; } }
+.main.chat .feed { flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 4px 12px 12px; border-radius: 0; border-top: 1.5px solid var(--line); }
+.main.chat .feed-inner { max-width: 980px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+.main.chat .bubble { max-width: min(78%, 560px); }
+@media (min-width: 900px) { .main.chat .bubble { max-width: min(62%, 560px); } }
+.main.chat .composer { position: static; flex: none; margin: 0; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); }
+@media (min-width: 900px) { .main.chat .composer { padding: 10px 24px 16px; } }
+.main.chat .composer > * { max-width: 980px; margin-left: auto; margin-right: auto; }
+.main.chat .empty { margin: auto 0; }
+.composer-split { font-size: 13px; font-weight: 800; color: var(--blue); margin: 0 0 6px 54px; }
+.re-bubble { z-index: 40; }
+
+/* ---------- шапка главной (как в референсе) ---------- */
+.hero { margin: 0 -16px; color: #fff; background: #8b1a26; }
+@media (min-width: 900px) { .hero { margin: 16px 0 0; border-radius: 20px; overflow: hidden; } }
+/* кайма-ковёр: синий фон, золотые ромбы, красные точки */
+.hero-band {
+  height: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='16' viewBox='0 0 28 16'%3E%3Crect width='28' height='16' fill='%23202a44'/%3E%3Cpath d='M14 2l6 6-6 6-6-6z' fill='%23e3a63b'/%3E%3Cpath d='M14 5.5l2.5 2.5-2.5 2.5-2.5-2.5z' fill='%23202a44'/%3E%3Cpath d='M1 8l2-2 2 2-2 2zM23 8l2-2 2 2-2 2z' fill='%23c8323f'/%3E%3C/svg%3E") repeat-x left center / 28px 16px;
+}
+.hero-body { padding: 14px 16px 16px; }
+.hero-top { display: flex; align-items: center; gap: 12px; }
+.hero-buta { width: 40px; height: 40px; color: var(--gold); flex: none; }
+.hero-hello { flex: 1; min-width: 0; }
+.hero-hello h1 { margin: 0; font: 900 24px/1.15 var(--font); color: #fff; }
+.hero-date { font-size: 14px; font-weight: 700; opacity: .85; }
+.hero-btn {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; color: #fff; font-weight: 800;
+  background: rgba(255, 255, 255, .12); border: 1.5px solid rgba(255, 255, 255, .45);
+}
+.hero-btn .ico svg { width: 18px; height: 18px; }
+.hero-rank { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 16px; padding: 0; border: 0; background: none; color: #fff; text-align: left; }
+.hero-rank b { font: 900 16px var(--font); flex: none; }
+.hero-bar { flex: 1; height: 10px; border-radius: 5px; background: rgba(0, 0, 0, .28); overflow: hidden; }
+.hero-bar i { display: block; height: 100%; border-radius: 5px; background: var(--gold); }
+.hero-xp { flex: none; font-size: 13px; font-weight: 700; opacity: .85; }
+.hero-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.hero-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 0;
+  background: #fbf3e4; color: #2a1d10; font-weight: 800; font-size: 14px;
+}
+
+.today-quote { margin: 16px 0 6px; padding: 2px 0 2px 14px; border-left: 4px solid var(--gold); }
+.today-quote blockquote { margin: 0; font: italic 700 17px/1.4 var(--serif); }
+.tq-ru { margin-top: 3px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.today-quote figcaption { margin-top: 4px; font-size: 12px; font-weight: 800; color: var(--muted); opacity: .8; }
+
+/* лента дней */
+.day-strip { display: flex; gap: 8px; overflow-x: auto; margin: 10px -16px 4px; padding: 4px 16px 8px; scrollbar-width: none; scroll-snap-type: x proximity; }
+.day-strip::-webkit-scrollbar { display: none; }
+.ds-day {
+  flex: none; width: 52px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 0 4px;
+  border-radius: 14px; border: 2px solid var(--line); border-bottom-width: 4px; background: var(--surface); color: var(--text); scroll-snap-align: start;
+}
+.ds-wd { font-size: 12px; font-weight: 800; color: var(--muted); }
+.ds-num { font: 900 19px/1.1 var(--font); }
+.ds-dot { height: 12px; font-size: 9px; line-height: 12px; color: var(--brand); }
+.ds-day.past { opacity: .6; }
+.ds-day.today .ds-num { color: var(--brand); }
+.ds-day.sel { background: #8b1a26; border-color: #5e101a; color: #fff; opacity: 1; }
+.ds-day.sel .ds-wd, .ds-day.sel .ds-num, .ds-day.sel .ds-dot { color: #fff; }
+
+/* ---------- эмодзи у задач ---------- */
+.tc-emoji { flex: none; width: 38px; height: 38px; margin-top: 0; border-radius: 12px; border: 2px dashed var(--line); background: none; font-size: 22px; line-height: 1; color: var(--muted); }
+.tc-emoji.set { border-color: transparent; }
+.tc-emoji:hover { background: var(--surface-2); }
+.row-emoji, .tt-emoji { flex: none; border: 0; background: none; padding: 0; font-size: 20px; line-height: 1; }
+.tt-emoji { font-size: 17px; }
+.emoji-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.emoji-cur { font-size: 40px; line-height: 1; }
+.emoji-tabs { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; margin-top: 8px; border-bottom: 1.5px solid var(--line); }
+.emoji-tabs button { flex: none; width: 40px; height: 36px; border: 0; border-radius: 10px; background: none; font-size: 20px; }
+.emoji-tabs button.on { background: var(--surface-2); }
+.emoji-cat { margin: 10px 0 4px; font-size: 13px; font-weight: 800; color: var(--muted); }
+.emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 2px; }
+.emoji-grid button { height: 44px; border: 0; border-radius: 10px; background: none; font-size: 24px; }
+.emoji-grid button:hover, .emoji-grid button.on { background: var(--surface-2); }
+.emoji-grid.recent { padding-bottom: 6px; border-bottom: 1.5px solid var(--line); }
+
+/* ---------- дерево задач ---------- */
+.tt { display: flex; flex-direction: column; margin-top: 4px; }
+.tt-node { display: flex; flex-direction: column; min-width: 0; }
+.tt-row { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 0; }
+.tt-row .check { width: 24px; height: 24px; }
+.tt-row.done .tt-title { color: var(--muted); text-decoration: line-through; }
+.tt-row.deep .tt-title { font-size: 15px; }
+.tt-body { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; cursor: pointer; }
+.tt-title { font-weight: 700; overflow-wrap: anywhere; min-width: 0; }
+.tt-meta { display: inline-flex; gap: 8px; font-size: 12.5px; font-weight: 800; color: var(--muted); }
+.tt-meta .late { color: var(--danger); }
+.tt-count { padding: 0 7px; border-radius: 999px; background: var(--surface-2); }
+/* линия-направляющая: дети сдвинуты и отчерчены слева */
+.tt-children { margin-left: 11px; padding-left: 14px; border-left: 2px solid var(--line); display: flex; flex-direction: column; }
+@media (max-width: 480px) { .tt-children { padding-left: 10px; } }
+.tt-children > .sub-add { margin: 4px 0 8px; }
+.tt-row .add-sub { width: 28px; height: 28px; font-size: 16px; }
+@media (hover: hover) { .tt-row .add-sub { opacity: 0; } .tt-row:hover .add-sub { opacity: 1; } }
+@media (min-width: 900px) {
+  .main.chat .feed { padding: 4px 32px 12px; }
+  .main.chat .feed-inner, .main.chat .composer > * { max-width: none; }
+}

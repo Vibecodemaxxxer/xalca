@@ -1,6 +1,8 @@
 import type { Routine, RoutineLog, Task } from '../db/types';
 import { describe } from '../domain/recurrence';
-import { logRoutine, logRoutineValue, setTaskDone, setTaskProgress } from '../domain/ops';
+import { useState } from 'react';
+import { logRoutine, logRoutineValue, saveTask, setTaskDone, setTaskProgress } from '../domain/ops';
+import { EmojiPicker } from './emoji';
 import { Az } from '../i18n/Az';
 import { today, type Day } from '../lib/date';
 import { taskProgress } from '../domain/tree';
@@ -12,6 +14,7 @@ import { dayLabel } from './fmt';
 
 export function TaskRow({ task: t, onOpen, showDate = true, showProject = true }: { task: Task; onOpen: () => void; showDate?: boolean; showProject?: boolean }) {
   const { children, projectById, byId } = useData();
+  const [emoji, setEmoji] = useState(false);
   const done = t.status === 'done';
   const late = !done && !!t.date && t.date < today();
   const num = t.metric.type === 'number' ? t.metric : null;
@@ -24,6 +27,11 @@ export function TaskRow({ task: t, onOpen, showDate = true, showProject = true }
   return (
     <div className={`row${done ? ' done' : ''}`}>
       <Check on={done} onToggle={() => setTaskDone(t, !done)} />
+      {t.icon && (
+        <button className="row-emoji" onClick={() => setEmoji(true)} aria-label="Эмодзи">
+          {t.icon}
+        </button>
+      )}
       <div className="body" onClick={onOpen}>
         <div className="title">{t.title}</div>
         {meta ? (
@@ -55,6 +63,7 @@ export function TaskRow({ task: t, onOpen, showDate = true, showProject = true }
       </div>
       {num && <Stepper value={num.current ?? 0} target={num.target} unit={num.unit} onChange={(v) => setTaskProgress(t, v)} />}
       {!done && !num && <span className={`reward-chip ${t.size ?? 'm'}`}>+{taskXp(t)}</span>}
+      {emoji && <EmojiPicker value={t.icon} onPick={(e) => void saveTask(t.id, { icon: e })} onClose={() => setEmoji(false)} />}
     </div>
   );
 }
