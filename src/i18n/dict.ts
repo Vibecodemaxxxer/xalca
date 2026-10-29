@@ -121,4 +121,5 @@ export const dict: Record<string, string> = {
   'Layihəni tamamla': 'Завершить проект',
   'Tamamlanmış layihələr': 'Завершённые проекты',
   'Saxlanılanlar': 'Избранное',
+  'Qeydlər': 'Заметки',
 };

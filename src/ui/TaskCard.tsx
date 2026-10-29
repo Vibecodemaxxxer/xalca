@@ -288,7 +288,10 @@ function TaskCard({ task, defaults, onClose, onOpen }: { task?: Task; defaults?:
         </div>
       )}
 
-      <div className="tc-section">
+      <div className="tc-section tc-notes">
+        <h3>
+          <Az>Qeydlər</Az>
+        </h3>
         <MdEditor value={description} onChange={setDescription} />
       </div>
 

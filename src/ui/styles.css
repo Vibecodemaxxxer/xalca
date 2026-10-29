@@ -845,3 +845,16 @@ html[data-lang='mixed'] :is(button, a, label, select, [role=button]) .ru-t { dis
   .main.chat .feed { padding: 4px 32px 12px; }
   .main.chat .feed-inner, .main.chat .composer > * { max-width: none; }
 }
+
+/* ---------- заметки в карточке задачи — отдельный блок ---------- */
+.tc-notes .re {
+  background: var(--surface); border: 2px solid var(--line); border-radius: 16px;
+  padding: 0 14px 12px; overflow: clip;
+}
+.tc-notes .re:focus-within { border-color: color-mix(in srgb, var(--blue) 55%, var(--line)); }
+.tc-notes .re-toolbar {
+  margin: 0 -14px 8px; padding: 4px 8px; border: 0; border-bottom: 2px solid var(--line);
+  border-radius: 0; background: var(--surface-2); top: 0;
+}
+.tc-notes .re-content .ProseMirror { min-height: 96px; }
+.tc-notes .md-preview { min-height: 140px; }
