@@ -184,6 +184,9 @@ export function buyReward(r: Reward) {
 
 // ---------------- избранное ----------------
 
+/** Изменить текст сообщения. */
+export const editNote = (n: Note, text: string) => update<Note>('notes', n.id, { text, editedAt: Date.now() });
+
 export function newNote(text: string, images: string[] = []) {
   return create<Note>('notes', { text, images, pinned: false, movedTo: null, reviewed: false, processedAt: null });
 }

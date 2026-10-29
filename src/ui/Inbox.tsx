@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ClipboardEv
 import { remove, update } from '../db/db';
 import type { Note, Project, Task } from '../db/types';
 import { isOpen, matches, noteToTask, pieces, splitNumbered } from '../domain/notes';
-import { keepNote, markNoteMoved, newNote, noteToProject, noteToProjectNotes, noteToTaskOp, notesToTask } from '../domain/ops';
+import { editNote, keepNote, markNoteMoved, newNote, noteToProject, noteToProjectNotes, noteToTaskOp, notesToTask } from '../domain/ops';
 import { NOTE_XP } from '../domain/notes';
 import { Az } from '../i18n/Az';
 import { tr } from '../i18n/lang';
@@ -32,6 +32,7 @@ function Feed() {
   const [routineFrom, setRoutineFrom] = useState<Note | null>(null);
   const [projectFor, setProjectFor] = useState<Note | null>(null);
   const [merge, setMerge] = useState<Note[] | null>(null);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
   const feed = useRef<HTMLDivElement>(null);
 
   const shown = notes.filter((n) => matches(n, q));
@@ -166,7 +167,7 @@ function Feed() {
           </button>
         </div>
       ) : (
-        <Composer />
+        <Composer editing={editingNote} onEditDone={() => setEditingNote(null)} />
       )}
 
       {menu && (
@@ -181,6 +182,7 @@ function Feed() {
           onProject={() => (setProjectFor(menu), setMenu(null))}
           onRoutine={() => (setRoutineFrom(menu), setMenu(null))}
           onSelect={() => (setSelected(new Set([menu.id])), setMenu(null))}
+          onEdit={() => (setEditingNote(menu), setMenu(null))}
         />
       )}
       {projectFor && <ProjectPicker note={projectFor} onClose={() => setProjectFor(null)} />}
@@ -281,6 +283,11 @@ function Bubble({
               → {LABEL[moved.kind]}: {moved.title}
             </button>
           )}
+          {n.editedAt && (
+            <span className="bubble-edited">
+              <Az ru="изм.">red.</Az>
+            </span>
+          )}
           <span className="bubble-time">{time}</span>
           {!selecting && (
             <button className="bubble-more" onClick={(e) => (e.stopPropagation(), onMenu())} aria-label="Действия">
@@ -297,7 +304,8 @@ function Bubble({
 // экран сдвигается — и нажатие «Отправить» промахивается.
 const keepFocus = (e: PointerEvent) => e.preventDefault();
 
-function Composer() {
+/** Поле ввода. С editing — правка существующего сообщения, как в Telegram. */
+function Composer({ editing, onEditDone }: { editing?: Note | null; onEditDone?: () => void }) {
   const [text, setText] = useState('');
   const [imgs, setImgs] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -323,9 +331,24 @@ function Composer() {
     }
   };
 
-  // нумерованный план («1. … 2. …») уходит отдельными сообщениями — их удобно раскидать по одному
-  const parts = splitNumbered(text.trim());
+  // начали править сообщение — его текст в поле ввода
+  useEffect(() => {
+    if (!editing) return;
+    setText(editing.text);
+    setImgs([]);
+    ta.current?.focus();
+  }, [editing?.id]);
+
+  // нумерованный план («1. … 2. …») уходит отдельными сообщениями — их удобно раскидать по одному;
+  // при правке сообщение остаётся одним
+  const parts = editing ? [text.trim()] : splitNumbered(text.trim());
   const send = async () => {
+    if (editing) {
+      if (text.trim() || editing.images.length) await editNote(editing, text.trim());
+      setText('');
+      onEditDone?.();
+      return;
+    }
     if (!text.trim() && !imgs.length) return;
     for (const [k, part] of parts.entries()) await newNote(part, k === 0 ? imgs : []);
     setText('');
@@ -335,6 +358,20 @@ function Composer() {
 
   return (
     <form className="composer" onSubmit={(e) => (e.preventDefault(), void send())}>
+      {editing && (
+        <div className="composer-edit">
+          <span className="ico">{Icon.edit}</span>
+          <span className="ce-text">
+            <b>
+              <Az ru="Редактирование">Redaktə</Az>
+            </b>
+            <span>{editing.text || 'Картинка'}</span>
+          </span>
+          <button type="button" onPointerDown={keepFocus} onClick={() => (setText(''), onEditDone?.())} aria-label="Отменить правку">
+            ×
+          </button>
+        </div>
+      )}
       {parts.length > 1 && (
         <div className="composer-split">
           <Az ru={`Уйдёт ${parts.length} отдельными сообщениями`} full>{`${parts.length} ayrı mesaj kimi gedəcək`}</Az>
@@ -386,11 +423,14 @@ function Composer() {
   );
 }
 
-function NoteMenu({ note: n, onClose, onTask, onProject, onRoutine, onSelect }: { note: Note; onClose: () => void; onTask: () => void; onProject: () => void; onRoutine: () => void; onSelect: () => void }) {
+function NoteMenu({ note: n, onClose, onTask, onProject, onRoutine, onSelect, onEdit }: { note: Note; onClose: () => void; onTask: () => void; onProject: () => void; onRoutine: () => void; onSelect: () => void; onEdit: () => void }) {
   return (
     <Sheet onClose={onClose}>
       <p className="menu-preview">{n.text || 'Картинка'}</p>
       <div className="tc-menu">
+        <button onClick={onEdit}>
+          ✎ <Az ru="Редактировать">Redaktə et</Az>
+        </button>
         <button onClick={onTask}>
           → <Az ru="В задачу">Tapşırığa</Az>
         </button>

@@ -24,6 +24,7 @@ export const Icon = {
   send: svg(<path d="M4 12l16-8-6 16-2.5-6.5z" />, { fill: "currentColor", strokeWidth: 1.5 }),
   inbox: svg(<><path d="M4 13.5V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6.5" /><path d="M4 13.5h4.5l1.5 2.5h4l1.5-2.5H20v4a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" /></>),
   carpet: svg(<><rect x="5" y="4" width="14" height="16" rx="1.5" /><path d="M12 7.5l3 4.5-3 4.5-3-4.5z" /><path d="M7 2v2M10 2v2M14 2v2M17 2v2M7 20v2M10 20v2M14 20v2M17 20v2" /></>),
+  edit: svg(<><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></>),
   plus: svg(<path d="M12 5v14M5 12h14" />, { strokeWidth: 2.4 }),
   check: svg(<path d="M5 12.5l4.5 4.5L19 7.5" />, { strokeWidth: 3.2 }),
   sync: svg(<><path d="M20 12a8 8 0 0 1-14 5.3M4 12a8 8 0 0 1 14-5.3" /><path d="M18 2.5v4.2h-4.2M6 21.5v-4.2h4.2" /></>),
@@ -36,9 +37,12 @@ export const Icon = {
 export function Buta({ className = 'buta' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
-      <path d="M15.5 3.5c-1.5 2-6.5 3-8.5 7.5-2 4.6.8 9.5 5.6 9.5 4.4 0 7.4-3.6 6.8-7.6-.4-3-3.2-4.7-5.6-3.9-2 .7-2.4 3.2-1 4.2" />
-      <path d="M12.6 16.6c-2-.3-3.2-2-2.8-4" opacity=".6" />
-      <circle cx="15.5" cy="3.5" r=".8" fill="currentColor" />
+      {/* сдвиг — чтобы визуальный центр буты совпал с центром значка */}
+      <g transform="translate(-0.9 0.43)">
+        <path d="M15.5 3.5c-1.5 2-6.5 3-8.5 7.5-2 4.6.8 9.5 5.6 9.5 4.4 0 7.4-3.6 6.8-7.6-.4-3-3.2-4.7-5.6-3.9-2 .7-2.4 3.2-1 4.2" />
+        <path d="M12.6 16.6c-2-.3-3.2-2-2.8-4" opacity=".6" />
+        <circle cx="15.5" cy="3.5" r=".8" fill="currentColor" />
+      </g>
     </svg>
   );
 }

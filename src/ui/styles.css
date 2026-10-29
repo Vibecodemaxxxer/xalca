@@ -847,14 +847,61 @@ html[data-lang='mixed'] :is(button, a, label, select, [role=button]) .ru-t { dis
 }
 
 /* ---------- заметки в карточке задачи — отдельный блок ---------- */
-.tc-notes .re {
+.re {
   background: var(--surface); border: 2px solid var(--line); border-radius: 16px;
   padding: 0 14px 12px; overflow: clip;
 }
-.tc-notes .re:focus-within { border-color: color-mix(in srgb, var(--blue) 55%, var(--line)); }
-.tc-notes .re-toolbar {
+.re:focus-within { border-color: color-mix(in srgb, var(--blue) 55%, var(--line)); }
+.re > .re-toolbar {
   margin: 0 -14px 8px; padding: 4px 8px; border: 0; border-bottom: 2px solid var(--line);
   border-radius: 0; background: var(--surface-2); top: 0;
 }
-.tc-notes .re-content .ProseMirror { min-height: 96px; }
+.re .re-content .ProseMirror { min-height: 96px; }
 .tc-notes .md-preview { min-height: 140px; }
+
+/* ---------- отступы и выравнивание ---------- */
+.page-head { padding: 28px 0 12px; align-items: flex-end; }
+@media (min-width: 900px) { .page-head { padding-top: 36px; } }
+.page-head .sub { margin-top: 4px; }
+/* «+» и другие значки — строго по центру кнопки */
+.add-sub, .twist, .icon-btn, .composer-btn, .composer-send, .hero-btn.icon { display: inline-grid; place-items: center; padding: 0; line-height: 1; }
+.add-sub { font-size: 0; }
+.add-sub::before { content: ''; width: 12px; height: 12px; background:
+  linear-gradient(currentColor, currentColor) center / 12px 2.5px no-repeat,
+  linear-gradient(currentColor, currentColor) center / 2.5px 12px no-repeat; }
+.icon-btn { width: 40px; height: 40px; }
+.icon-btn .ico svg { width: 20px; height: 20px; }
+.hero-btn.icon { width: 40px; height: 40px; flex: none; }
+.hero-top { flex-wrap: wrap; row-gap: 8px; }
+.hero-hello h1 { font-size: 22px; }
+.section { margin-top: 28px; }
+.section > h2 { margin-bottom: 6px; }
+.sheet { padding-left: 18px; padding-right: 18px; }
+.tc-section { margin-top: 22px; }
+.tc-section > h3 { margin-bottom: 8px; }
+.composer-edit {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding: 6px 4px 6px 12px;
+  border-left: 3px solid var(--blue); font-size: 13.5px;
+}
+.composer-edit .ico { color: var(--blue); }
+.ce-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ce-text b { color: var(--blue); font-weight: 800; }
+.ce-text span { color: var(--muted); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.composer-edit button { width: 32px; height: 32px; border: 0; border-radius: 50%; background: none; color: var(--muted); font-size: 22px; line-height: 1; }
+.bubble-edited { font-style: italic; }
+/* окна поверх цветных блоков не наследуют их белый текст */
+.sheet { color: var(--text); }
+/* ковёр */
+.carpet { width: 100%; max-width: 560px; height: auto; margin: 8px 0 4px; filter: drop-shadow(0 6px 12px rgba(60, 20, 10, .2)); }
+.carpet-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; margin-top: 12px; }
+.carpet-stats > div { border: 2px solid var(--line); border-radius: 14px; padding: 8px 6px; text-align: center; min-width: 0; }
+.carpet-stats b { display: block; font: 900 22px var(--font); color: var(--blue); }
+.carpet-stats span { font-size: 12px; font-weight: 800; color: var(--muted); }
+.carpet-hint { text-align: center; margin: 12px 4px 0; }
+/* шапка на телефоне: кнопки справа — круглыми значками, приветствие в одну строку */
+.hero-top { flex-wrap: nowrap; }
+@media (max-width: 479px) {
+  .carpet-btn { width: 40px; height: 40px; padding: 0; justify-content: center; }
+  .carpet-btn .hb-label { display: none; }
+}
+.hero-hello h1, .hero-date { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

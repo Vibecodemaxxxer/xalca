@@ -103,8 +103,8 @@ function ProjectView({ project: p }: { project: Project }) {
             )}
           </div>
         </div>
-        <button className="btn ghost" onClick={() => setEditing(true)}>
-          <Az>Redaktə</Az>
+        <button className="btn ghost icon-btn" onClick={() => setEditing(true)} aria-label="Редактировать проект" title="Redaktə">
+          <span className="ico">{Icon.edit}</span>
         </button>
       </div>
       {pr.total > 0 && <Bar cur={pr.done} target={pr.total} />}

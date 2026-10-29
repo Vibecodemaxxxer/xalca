@@ -2,6 +2,7 @@
   <rect width="512" height="512" fill="#7a1f2b"/>
   <rect x="34" y="34" width="444" height="444" rx="40" fill="none" stroke="#c8902e" stroke-width="12"/>
   <rect x="60" y="60" width="392" height="392" rx="28" fill="none" stroke="#c8902e" stroke-width="4" stroke-dasharray="12 10"/>
+  <g transform="translate(-12 2)">
   <path d="M318 112C250 150 150 205 152 305c2 72 52 115 112 115 70 0 112-52 108-112-4-66-58-92-54-196z" fill="#f6efe3"/>
   <path d="M318 112c22-26 62-14 58 16-3 20-26 25-34 10" fill="none" stroke="#f6efe3" stroke-width="16" stroke-linecap="round"/>
   <path d="M300 170C252 200 198 240 198 302c0 46 32 74 68 74 44 0 68-34 64-72-3-44-36-62-30-134z" fill="none" stroke="#7a1f2b" stroke-width="9"/>
@@ -9,5 +10,6 @@
   <circle cx="266" cy="318" r="10" fill="#7a1f2b"/>
   <g fill="#c8902e">
     <circle cx="232" cy="250" r="7"/><circle cx="214" cy="290" r="7"/><circle cx="300" cy="262" r="7"/><circle cx="306" cy="308" r="7"/>
+  </g>
   </g>
 </svg>

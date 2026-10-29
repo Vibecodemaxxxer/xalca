@@ -90,9 +90,9 @@ function TreeNode({ task: t, depth, onOpen }: { task: Task; depth: number; onOpe
             </span>
           )}
         </div>
-        <button className="add-sub" onClick={() => (setAdding(true), !open && toggle())} aria-label="Добавить подзадачу">
-          +
-        </button>
+        {/* плюс нарисован в CSS — строго по центру кнопки */}
+        <button className="add-sub" onClick={() => (setAdding(true), !open && toggle())} aria-label="Добавить подзадачу" />
+
       </div>
       {(open || adding) && (kids.length > 0 || adding) && (
         <div className="tt-children">

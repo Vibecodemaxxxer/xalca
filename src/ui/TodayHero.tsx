@@ -47,9 +47,14 @@ export function TodayHero() {
               </Az>
             </div>
           </div>
-          <button className="hero-btn" onClick={() => setCarpet(true)}>
+          <button className="hero-btn carpet-btn" onClick={() => setCarpet(true)} aria-label="Ковёр месяца">
             <span className="ico">{Icon.carpet}</span>
-            <Az ru="Ковёр">Xalça</Az>
+            <span className="hb-label">
+              <Az ru="Ковёр">Xalça</Az>
+            </span>
+          </button>
+          <button className="hero-btn icon" onClick={() => (location.hash = 'settings')} aria-label="Настройки">
+            <span className="ico">{Icon.settings}</span>
           </button>
         </div>
         <button className="hero-rank" onClick={() => (location.hash = 'profile')}>
@@ -93,7 +98,9 @@ function CarpetSheet({ onClose }: { onClose: () => void }) {
   const [month, setMonth] = useState(() => today().slice(0, 8) + '01');
   const [picked, setPicked] = useState<Day | undefined>();
   const m = parseDay(month);
-  const monthXp = [...xp.byDay].filter(([d]) => d.startsWith(month.slice(0, 7))).reduce((a, [, v]) => a + v, 0);
+  const inMonth = [...xp.byDay].filter(([d, v]) => d.startsWith(month.slice(0, 7)) && v > 0);
+  const monthXp = inMonth.reduce((a, [, v]) => a + v, 0);
+  const best = inMonth.reduce<[Day, number] | null>((b, x) => (!b || x[1] > b[1] ? x : b), null);
   const first = [...xp.byDay.keys()].sort()[0];
   const canBack = !!first && month > first.slice(0, 8) + '01';
   const canFwd = month < today().slice(0, 8) + '01';
@@ -120,8 +127,30 @@ function CarpetSheet({ onClose }: { onClose: () => void }) {
           </button>
         </div>
         <Carpet month={month} picked={picked} onPick={(d) => setPicked(d === picked ? undefined : d)} />
-        <p className="hint" style={{ textAlign: 'center' }}>
-          {picked ? `${Number(picked.slice(8))}-е: ${xp.byDay.get(picked) ?? 0} XP` : `${monthXp} XP за месяц · каждый ряд — день, пропуск — пустые нити`}
+        <div className="carpet-stats">
+          <div>
+            <b>{monthXp}</b>
+            <span>XP</span>
+          </div>
+          <div>
+            <b>{inMonth.length}</b>
+            <span>
+              <Az ru="дней соткано" full>
+                gün toxunub
+              </Az>
+            </span>
+          </div>
+          <div>
+            <b>{best ? Number(best[0].slice(8)) : '—'}</b>
+            <span>
+              <Az ru={best ? `лучший день · ${best[1]} XP` : 'лучший день'} full>
+                {best ? `ən yaxşı gün · ${best[1]} XP` : 'ən yaxşı gün'}
+              </Az>
+            </span>
+          </div>
+        </div>
+        <p className="hint carpet-hint">
+          {picked ? `${Number(picked.slice(8))}-е число: ${xp.byDay.get(picked) ?? 0} XP` : 'Каждая полоска — день: больше сделано — богаче узор, пропуск — пустые нити. Тап по полоске — подробности.'}
         </p>
       </div>
     </Sheet>

@@ -64,72 +64,76 @@ export function Semeni({ streak, everDone, size = 26 }: { streak: number; everDo
 const FIELD = '#6e1a26';
 const COLORS = ['#c8902e', '#f6efe3', '#2b4f7e', '#c8902e'];
 
-/** Ковёр месяца: ряд — день, богатство узора — опыт за день, пропуск — голые нити основы. */
+/**
+ * Ковёр месяца, лежит горизонтально: столбец — день, богатство узора — опыт за день,
+ * пропуск — голые нити основы, будущие дни ещё не сотканы.
+ */
 export function Carpet({ month, onPick, picked }: { month: Day; onPick?: (d: Day) => void; picked?: Day }) {
   const { xp } = useData();
   const m = parseDay(month);
   const n = daysInMonth(m.getFullYear(), m.getMonth());
   const t = today();
-  const W = 200;
-  const ROW = 11;
-  const B = 14; // кайма
-  const H = n * ROW + B * 2;
-  const inner = W - B * 2;
+  const COL = 10;
+  const B = 12; // кайма
+  const FH = 104; // высота поля
+  const W = n * COL + B * 2;
+  const H = FH + B * 2;
 
-  const rows = Array.from({ length: n }, (_, i) => {
+  const cols = Array.from({ length: n }, (_, i) => {
     const d = toDay(new Date(m.getFullYear(), m.getMonth(), i + 1));
     return { d, xp: xp.byDay.get(d) ?? 0, future: d > t };
   });
 
   return (
-    <svg className="carpet" viewBox={`0 -6 ${W} ${H + 12}`} role="img" aria-label="Ковёр месяца">
-      {/* бахрома */}
-      {Array.from({ length: 24 }, (_, i) => (
-        <g key={i} stroke="#d9c7a6" strokeWidth="1">
-          <line x1={B + 4 + i * ((inner - 8) / 23)} y1={-6} x2={B + 4 + i * ((inner - 8) / 23)} y2={1} />
-          <line x1={B + 4 + i * ((inner - 8) / 23)} y1={H - 1} x2={B + 4 + i * ((inner - 8) / 23)} y2={H + 6} />
-        </g>
-      ))}
-      {/* кайма */}
+    <svg className="carpet" viewBox={`-8 0 ${W + 16} ${H}`} role="img" aria-label="Ковёр месяца">
+      {/* бахрома по коротким краям */}
+      {Array.from({ length: 16 }, (_, i) => {
+        const y = B + 4 + i * ((FH - 8) / 15);
+        return (
+          <g key={i} stroke="#d9c7a6" strokeWidth="1">
+            <line x1={-8} y1={y} x2={1} y2={y} />
+            <line x1={W - 1} y1={y} x2={W + 8} y2={y} />
+          </g>
+        );
+      })}
       <rect x="0" y="0" width={W} height={H} rx="3" fill="#2b4f7e" />
-      <rect x="4" y="4" width={W - 8} height={H - 8} fill="none" stroke="#c8902e" strokeWidth="2" />
-      {Array.from({ length: Math.floor((H - 16) / 10) }, (_, i) => (
+      <rect x="3.5" y="3.5" width={W - 7} height={H - 7} fill="none" stroke="#c8902e" strokeWidth="1.6" />
+      {Array.from({ length: Math.floor((W - 12) / 10) }, (_, i) => (
         <g key={i} fill="#c8902e">
-          <path d={`M7 ${10 + i * 10} l3 -3 l3 3 l-3 3z`} />
-          <path d={`M${W - 13} ${10 + i * 10} l3 -3 l3 3 l-3 3z`} />
+          <path d={`M${9 + i * 10} 6l2.5 2.5-2.5 2.5-2.5-2.5z`} />
+          <path d={`M${9 + i * 10} ${H - 11}l2.5 2.5-2.5 2.5-2.5-2.5z`} />
         </g>
       ))}
-      {/* поле */}
-      <rect x={B} y={B} width={inner} height={n * ROW} fill={FIELD} />
-      {rows.map((r, i) => {
-        const y = B + i * ROW;
-        const lvl = r.future ? -1 : knotLevel(r.xp);
+      <rect x={B} y={B} width={n * COL} height={FH} fill={FIELD} />
+      {cols.map((c, i) => {
+        const x = B + i * COL;
+        const lvl = c.future ? -1 : knotLevel(c.xp);
         const motifs = lvl > 0 ? lvl * 2 : 0;
         return (
-          <g key={r.d} className={`crow${picked === r.d ? ' picked' : ''}`} onClick={() => onPick?.(r.d)}>
-            <title>{`${dayLabel(r.d).ru}: ${r.xp} XP`}</title>
-            {lvl === -1 && <rect x={B} y={y} width={inner} height={ROW} fill="#3a1016" opacity=".55" />}
+          <g key={c.d} className={`crow${picked === c.d ? ' picked' : ''}`} onClick={() => onPick?.(c.d)}>
+            <title>{`${dayLabel(c.d).ru}: ${c.xp} XP`}</title>
+            <rect x={x} y={B} width={COL} height={FH} fill="transparent" />
+            {lvl === -1 && <rect x={x} y={B} width={COL} height={FH} fill="#3a1016" opacity=".55" />}
             {lvl === 0 && (
               <>
-                <rect x={B} y={y} width={inner} height={ROW} fill="#f6efe3" opacity=".9" />
-                {Array.from({ length: 34 }, (_, k) => (
-                  <line key={k} x1={B + 2 + k * (inner / 34)} y1={y} x2={B + 2 + k * (inner / 34)} y2={y + ROW} stroke="#c9b48f" strokeWidth=".6" />
+                <rect x={x} y={B} width={COL} height={FH} fill="#f6efe3" opacity=".92" />
+                {Array.from({ length: 13 }, (_, k) => (
+                  <line key={k} x1={x} y1={B + 4 + k * 8} x2={x + COL} y2={B + 4 + k * 8} stroke="#c9b48f" strokeWidth=".6" />
                 ))}
               </>
             )}
             {lvl > 0 &&
               Array.from({ length: motifs }, (_, k) => {
-                const cx = B + (inner / (motifs + 1)) * (k + 1);
-                const cy = y + ROW / 2;
-                const c = COLORS[(k + i) % COLORS.length];
+                const cy = B + (FH / (motifs + 1)) * (k + 1);
+                const cx = x + COL / 2;
                 return lvl === 4 && k === Math.floor(motifs / 2) - 1 ? (
-                  <path key={k} d={`M${cx + 3} ${cy - 4} c-2 1 -5 2 -5 5 c0 2 2 3 3 3 c2 0 3 -1 3 -3 c0 -1 -1 -2 -2 -1`} fill="none" stroke="#f6efe3" strokeWidth="1.1" />
+                  <path key={k} d={`M${cx + 2.5} ${cy - 3.5}c-1.6.8-4 1.6-4 4 0 1.6 1.6 2.4 2.4 2.4 1.6 0 2.4-.8 2.4-2.4 0-.8-.8-1.6-1.6-.8`} fill="none" stroke="#f6efe3" strokeWidth=".9" />
                 ) : (
-                  <path key={k} d={`M${cx} ${cy - 4} l4 4 l-4 4 l-4 -4z`} fill={c} opacity={0.55 + lvl * 0.11} />
+                  <path key={k} d={`M${cx} ${cy - 3.5}l3.5 3.5-3.5 3.5-3.5-3.5z`} fill={COLORS[(k + i) % COLORS.length]} opacity={0.55 + lvl * 0.11} />
                 );
               })}
-            {lvl >= 2 && <line x1={B} y1={y + 0.5} x2={B + inner} y2={y + 0.5} stroke="#c8902e" strokeWidth=".5" opacity=".5" />}
-            {picked === r.d && <rect x={B} y={y} width={inner} height={ROW} fill="none" stroke="#fff" strokeWidth="1" />}
+            {lvl >= 2 && <line x1={x + 0.5} y1={B} x2={x + 0.5} y2={B + FH} stroke="#c8902e" strokeWidth=".5" opacity=".5" />}
+            {picked === c.d && <rect x={x + 0.5} y={B + 0.5} width={COL - 1} height={FH - 1} fill="none" stroke="#fff" strokeWidth="1.2" />}
           </g>
         );
       })}

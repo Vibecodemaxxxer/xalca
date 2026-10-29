@@ -112,6 +112,8 @@ export interface Note extends Base {
   reviewed?: boolean;
   /** Когда разобрано (перенесено или оставлено) — для опыта за разбор. */
   processedAt?: number | null;
+  /** Когда текст правили (показываем «изм.», как в Telegram). */
+  editedAt?: number | null;
 }
 
 export type SyncTable = 'tasks' | 'projects' | 'routines' | 'routineLogs' | 'rewards' | 'purchases' | 'notes';

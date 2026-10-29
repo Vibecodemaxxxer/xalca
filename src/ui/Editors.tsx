@@ -35,7 +35,7 @@ export function ProjectSheet({ project, onClose, onCreated }: { project?: Projec
         </Field>
         <div className="field">
           <span>
-            <Az>Təsvir</Az>
+            <Az>Qeydlər</Az>
           </span>
           <MdEditor value={description} onChange={setDescription} startInPreview={!!project} />
         </div>
@@ -100,7 +100,7 @@ export function RoutineSheet({ routine, defaults, onCreated, onClose }: { routin
         </Field>
         <div className="field">
           <span>
-            <Az>Təsvir</Az>
+            <Az>Qeydlər</Az>
           </span>
           <MdEditor value={description} onChange={setDescription} startInPreview={!!routine} />
         </div>
