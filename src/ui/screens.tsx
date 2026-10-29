@@ -259,8 +259,14 @@ function TaskList() {
     { title: 'Bu gün', items: open.filter((x) => x.date === t), showDate: false },
     { title: 'Sabah', items: open.filter((x) => x.date === tm), showDate: false },
     { title: 'Qarşıdakı', items: open.filter((x) => x.date && x.date > tm) },
-    // без даты — только самостоятельные задачи; подзадачи и задачи проектов живут в своих деревьях
-    { title: 'Tarixsiz', items: open.filter((x) => !x.date && !x.parentId && !x.projectId).sort((a, b) => b.order - a.order) },
+    // без даты — все задачи верхнего уровня, в т.ч. из проектов (с меткой проекта); подзадачи — в своих деревьях.
+    // Сначала задачи без проекта, затем сгруппированные по проектам.
+    {
+      title: 'Tarixsiz',
+      items: open
+        .filter((x) => !x.date && !x.parentId)
+        .sort((a, b) => (a.projectId ?? '').localeCompare(b.projectId ?? '') || b.order - a.order),
+    },
   ];
   for (const g of groups.slice(0, 4)) g.items.sort((a, b) => a.date!.localeCompare(b.date!) || byTime(a, b));
   const done = tasks.filter((x) => x.status === 'done').sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0)).slice(0, 50);
