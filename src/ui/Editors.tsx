@@ -20,7 +20,10 @@ export function ProjectSheet({ project, onClose, onCreated }: { project?: Projec
     if (!title.trim()) return;
     const fields = { title: title.trim(), description, color };
     if (project) await update<Project>('projects', project.id, fields);
-    else onCreated?.(await newProject(fields));
+    else {
+      const p = await newProject(fields);
+      onCreated?.(p);
+    }
     onClose();
   };
 
@@ -81,7 +84,11 @@ export function RoutineSheet({ routine, defaults, onCreated, onClose }: { routin
     if (!title.trim()) return;
     const fields = { title: title.trim(), description, recurrence, time: time || null, reminder: time ? reminder : null, metric, active };
     if (routine) await update<Routine>('routines', routine.id, fields);
-    else onCreated?.(await newRoutine(fields));
+    else {
+      // не onCreated?.(await …): при отсутствии onCreated `?.` пропускает и сам вызов создания
+      const r = await newRoutine(fields);
+      onCreated?.(r);
+    }
     onClose();
   };
 
