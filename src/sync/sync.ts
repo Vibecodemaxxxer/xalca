@@ -40,6 +40,9 @@ function setState(s: Partial<SyncState>) {
 
 let running: Promise<void> | null = null;
 let again = false;
+/** Счётчик локальных правок и номер последней, уже выгруженной в Dropbox. */
+let edits = 0;
+let sent = 0;
 
 export function syncNow(): Promise<void> {
   if (running) {
@@ -82,8 +85,10 @@ async function syncOnce() {
     // 2. Выгрузить свой снимок, если были локальные изменения.
     if (await getMeta<boolean>('sync.dirty') !== false) {
       await setMeta('sync.dirty', false);
+      const upTo = edits;
       try {
         await upload(`/data/${deviceId}.json`, JSON.stringify(await exportSnapshot(deviceId)));
+        sent = upTo;
       } catch (e) {
         await setMeta('sync.dirty', true);
         throw e;
@@ -124,17 +129,33 @@ async function applySnapshot(snap: Snapshot): Promise<number> {
   return changed;
 }
 
-/** Запуск автосинхронизации: при старте, при появлении сети, при возврате в приложение, после правок и раз в 5 минут. */
+/**
+ * Запуск автосинхронизации: при старте, при появлении сети, при возврате в приложение, после правок и раз в 5 минут.
+ * Правки не ждут таймера, если приложение сворачивают: таймер мог бы уже не сработать — устройство заснёт, вкладку закроют.
+ */
 export function startAutoSync() {
   let timer: ReturnType<typeof setTimeout> | undefined;
+  const flush = () => {
+    clearTimeout(timer);
+    timer = undefined;
+    void syncNow();
+  };
   onLocalChange(() => {
+    edits++;
     void setMeta('sync.dirty', true);
     clearTimeout(timer);
-    timer = setTimeout(() => void syncNow(), 3000);
+    timer = setTimeout(flush, 1000);
   });
   window.addEventListener('online', () => void syncNow());
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') void syncNow();
+    else if (timer !== undefined) flush();
+  });
+  // закрытие вкладки обрывает выгрузку — браузер спросит, если последние правки ещё не ушли
+  window.addEventListener('beforeunload', (e) => {
+    if (sent === edits || state.status === 'off' || !navigator.onLine) return;
+    flush();
+    e.preventDefault();
   });
   setInterval(() => void syncNow(), 5 * 60_000);
   void syncNow();

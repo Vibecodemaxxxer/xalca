@@ -71,10 +71,14 @@ async function accessToken(): Promise<string> {
   return next.access;
 }
 
+// Запрос, повисший при засыпании устройства, не должен навсегда занять синхронизацию.
+const TIMEOUT = 120_000;
+
 async function call(url: string, init: RequestInit): Promise<Response> {
   const res = await fetch(url, {
     ...init,
     headers: { Authorization: `Bearer ${await accessToken()}`, ...init.headers },
+    signal: AbortSignal.timeout(TIMEOUT),
   });
   if (!res.ok) throw new DropboxError(res.status, await res.text());
   return res;
